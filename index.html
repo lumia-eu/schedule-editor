@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📅 Редактор розкладу PRO</title>
+  <title>📅 Schedule-Editor</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4F46E5">
@@ -17,7 +17,7 @@
       --card-bg: #1F2937;
       --text: #F9FAFB;
       --border: #374151;
-      --input-bg: #374151;
+      --input-bg: #111827; /* Темніший фон для полів */
       --danger: #EF4444;
       --success: #10B981;
       --accent: #F59E0B;
@@ -35,7 +35,7 @@
       box-sizing: border-box;
     }
 
-    /* Стилізація панелі інструментів */
+    /* Панель інструментів */
     .toolbar {
       display: flex;
       gap: 20px;
@@ -48,7 +48,6 @@
       flex-shrink: 0;
     }
 
-    /* ФІКС ВІЗУАЛУ КНОПКИ ЗАВАНТАЖЕННЯ */
     .file-input-container {
       position: relative;
       overflow: hidden;
@@ -61,28 +60,19 @@
       padding: 10px 20px;
       border-radius: 10px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
       cursor: pointer;
       transition: 0.2s;
       border: none;
     }
 
-    .btn-upload-custom:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-
     #fileInput {
       position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
+      left: 0; top: 0; opacity: 0;
+      width: 100%; height: 100%; cursor: pointer;
     }
 
     #dateEditorContainer {
-      display: none; /* Показуємо тільки після завантаження */
+      display: none;
       align-items: center;
       gap: 12px;
       background: rgba(245, 158, 11, 0.1);
@@ -112,7 +102,7 @@
       display: none;
     }
 
-    /* Специфікація сітки */
+    /* Сітка */
     .container {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -139,8 +129,7 @@
       font-size: 14px;
       transition: 0.2s;
     }
-    .template-item:hover { border-color: var(--primary); background: #2D3748; }
-    .template-block { border: 1px solid var(--primary); color: var(--primary); font-weight: bold; }
+    .template-item:hover { border-color: var(--primary); }
 
     .schedule-area {
       display: flex;
@@ -165,44 +154,87 @@
       padding-bottom: 10px;
     }
 
+    /* ПОКРАЩЕНИЙ ВІЗУАЛ INPUT */
+    .subject-input, .time-input, .day-title-input {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .subject-input:hover, .time-input:hover {
+      border-color: #4B5563;
+    }
+
+    .subject-input:focus, .time-input:focus {
+      border-color: var(--primary);
+      background: #1F2937;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
     .day-title-input {
       background: transparent;
-      border: none;
-      color: var(--primary);
+      border: 1px solid transparent;
       font-size: 18px;
       font-weight: bold;
-      outline: none;
+      color: var(--primary);
+      width: auto;
+    }
+    .day-title-input:focus {
+      background: var(--input-bg);
+      border-color: var(--border);
     }
 
     .lesson {
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
-      background: var(--bg);
-      padding: 10px;
-      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+      padding: 12px;
+      border-radius: 12px;
       align-items: center;
+      border: 1px solid transparent;
     }
 
-    input[type="text"] {
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      outline: none;
+    .subject-input { flex: 1; font-weight: 500; }
+    .time-input { flex: 0.3; text-align: center; color: #9CA3AF; min-width: 120px; }
+
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.1);
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
     }
-    input[type="text"]:focus { border-color: var(--primary); }
+    .btn-delete:hover { background: var(--danger); color: white; }
 
-    .time-input { flex: 0.3; }
-    .subject-input { flex: 1; }
+    .btn-add-row {
+      width: 100%;
+      background: transparent;
+      color: #9CA3AF;
+      border: 1px dashed var(--border);
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .btn-add-row:hover { border-color: var(--primary); color: var(--primary); background: rgba(99, 102, 241, 0.05); }
 
-    .btn-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 20px; }
-    .btn-add-row { width: 100%; background: transparent; color: var(--text); border: 1px dashed var(--border); padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-    .btn-add-row:hover { border-color: var(--primary); color: var(--primary); }
-
-    .dragging { opacity: 0.4; }
     .drag-over { border-top: 3px solid var(--primary); }
+    .dragging { opacity: 0.4; }
   </style>
 </head>
 <body>
@@ -214,17 +246,17 @@
   </div>
 
   <div id="dateEditorContainer">
-    <input type="text" id="weekDateInput" class="date-input-main" placeholder="ДАТИ НЕМАЄ">
+    <input type="text" id="weekDateInput" class="date-input-main">
   </div>
   
-  <button id="saveBtn" class="btn-save" onclick="exportJSON()">📤 Зберегти</button>
+  <button id="saveBtn" class="btn-save" onclick="exportJSON()">📤 Зберегти JSON</button>
 </div>
 
 <div class="container">
   <div class="sidebar">
-    <h3 style="margin-top:0">Готові блоки</h3>
-    <div class="template-item template-block" draggable="true" ondragstart="startDrag(event, 'block', 'virobniche', true)">⚙️ Виробниче навч. (6 ур.)</div>
-    <div class="template-item template-block" draggable="true" ondragstart="startDrag(event, 'block', 'zahist', true)">🛡️ Захист України (6 ур.)</div>
+    <h3 style="margin-top:0">Блоки</h3>
+    <div class="template-item" style="border: 1px solid var(--primary); color: var(--primary); font-weight: bold;" draggable="true" ondragstart="startDrag(event, 'block', 'virobniche', true)">⚙️ Виробниче навчання</div>
+    <div class="template-item" style="border: 1px solid var(--primary); color: var(--primary); font-weight: bold;" draggable="true" ondragstart="startDrag(event, 'block', 'zahist', true)">🛡️ Захист України</div>
     
     <h3 style="margin-top:25px">Предмети</h3>
     <div id="templates-list"></div>
@@ -232,8 +264,8 @@
 
   <div class="schedule-area" id="app">
     <div style="text-align: center; color: #4B5563; margin-top: 100px;">
-      <h2>Вітаємо!</h2>
-      <p>Завантажте ваш JSON файл розкладу, щоб почати редагування.</p>
+      <h2>Файл не обрано</h2>
+      <p>Завантажте JSON для початку редагування</p>
     </div>
   </div>
 </div>
@@ -248,7 +280,6 @@ const blocks = {
 
 let rawData = null, dragItem = null, originalFileName = "schedule.json";
 
-// Ініціалізація сайдбару
 function initSidebar() {
   const list = document.getElementById("templates-list");
   subjectsTemplates.forEach(s => {
@@ -261,7 +292,6 @@ function initSidebar() {
   });
 }
 
-// Завантаження файлу
 document.getElementById("fileInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -283,7 +313,6 @@ function startDrag(e, type, payload, isCopy, day = null, index = null) {
 
 function handleDrop(e, targetDay) {
   e.preventDefault();
-  document.querySelectorAll('.lesson').forEach(l => l.classList.remove('drag-over'));
   if (!dragItem || !rawData) return;
 
   let itemsToAdd = [];
@@ -361,7 +390,7 @@ function render() {
 
     const addBtn = document.createElement("button");
     addBtn.className = "btn-add-row";
-    addBtn.innerText = "➕ Додати предмет";
+    addBtn.innerText = "➕ Додати новий предмет";
     addBtn.onclick = () => {
       lessons.push("Новий предмет", standardTimes[lessons.length/2] || "(00:00)");
       render();
@@ -382,6 +411,5 @@ function exportJSON() {
 
 initSidebar();
 </script>
-
 </body>
 </html>
