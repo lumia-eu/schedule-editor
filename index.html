@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>📅 Schedule-Editor</title>
   
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -20,12 +20,13 @@
       --danger: #f43f5e;
       --success: #10b981;
       --accent: #f59e0b;
-      --accent-glow: rgba(245, 158, 11, 0.15);
+      --accent-glow: rgba(245, 158, 11, 0.2);
+      --transition-smooth: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
     }
 
     * { box-sizing: border-box; }
     body {
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
@@ -35,6 +36,7 @@
       min-height: 100vh;
     }
 
+    /* Toolbar */
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -43,168 +45,202 @@
       align-items: center;
       background: var(--card-bg);
       padding: 15px 20px;
-      border-radius: 14px;
+      border-radius: 18px;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      backdrop-filter: blur(2px);
     }
-
     .file-input-container { position: relative; display: inline-flex; }
     .btn-upload-custom {
       background-color: var(--primary);
       color: white;
-      padding: 12px 24px;
-      border-radius: 10px;
+      padding: 10px 22px;
+      border-radius: 40px;
       font-weight: 600;
       border: none;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: 0.2s;
     }
-    .btn-upload-custom:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-    #fileInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+    .btn-upload-custom:hover { background-color: var(--primary-hover); transform: scale(0.98); }
+    #fileInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
     #dateEditorContainer {
       display: none;
       align-items: center;
       gap: 12px;
-      background: rgba(139, 92, 246, 0.1);
-      padding: 10px 18px;
-      border-radius: 10px;
+      background: rgba(139, 92, 246, 0.12);
+      padding: 6px 18px;
+      border-radius: 40px;
       border: 1px solid var(--primary);
     }
-
     .date-input-main {
       border: none; background: transparent;
-      font-size: 14px; font-weight: 600;
+      font-size: 14px; font-weight: 500;
       color: var(--text); outline: none; width: 220px;
     }
+    .btn-save {
+      background-color: var(--success);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      margin-left: auto;
+      transition: 0.2s;
+    }
+    .btn-save:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
+    /* main grid */
     .container {
       display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 25px;
+      grid-template-columns: 300px 1fr;
+      gap: 28px;
       flex-grow: 1;
     }
-
-    @media (max-width: 1100px) {
+    @media (max-width: 1000px) {
       .container { grid-template-columns: 1fr; }
-      .sidebar { order: 2; position: static; }
+      .sidebar { order: 2; position: static; margin-top: 0; }
     }
 
     .sidebar {
       background: var(--card-bg);
-      border-radius: 14px;
+      border-radius: 24px;
       padding: 20px;
       border: 1px solid var(--border);
       height: fit-content;
-      position: sticky; top: 20px;
-      max-height: 90vh;
-      overflow-y: auto;
+      position: sticky;
+      top: 20px;
+      backdrop-filter: blur(2px);
     }
 
     .schedule-area {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+      gap: 24px;
     }
 
+    /* Day card */
     .day {
       background: var(--card-bg);
-      border-radius: 14px;
+      border-radius: 24px;
       padding: 20px;
       border: 1px solid var(--border);
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
-    /* Day highlight when dragging over it */
     .day.drag-over-day {
       border-color: var(--primary);
-      box-shadow: 0 0 0 1px var(--primary), 0 4px 24px rgba(139,92,246,0.15);
+      box-shadow: 0 0 0 2px var(--primary), 0 8px 24px rgba(139,92,246,0.25);
     }
 
     .day-header {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
     }
-
     .day-title-input {
       background: transparent; border: none;
-      color: var(--primary); font-size: 1.2rem;
+      color: var(--primary); font-size: 1.3rem;
       font-weight: 700; outline: none; width: 100%;
+      letter-spacing: -0.3px;
     }
 
-    /* Lessons list wrapper — drop zone */
+    /* lessons list — контейнер для анімації */
     .lessons-list {
-      min-height: 20px;
+      min-height: 40px;
       position: relative;
+      transition: all 0.1s;
     }
 
+    /* Урок — стандартний семеричний вигляд з фіксованим комфортним розміром */
     .lesson {
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
+      margin-bottom: 12px;
       background: var(--input-bg);
-      padding: 10px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 16px;
       align-items: center;
       cursor: grab;
       border: 1px solid transparent;
-      transition: border-color 0.15s, opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.4, 1.1), 
+                  opacity 0.15s,
+                  border-color 0.1s,
+                  background 0.1s,
+                  box-shadow 0.2s;
       user-select: none;
       position: relative;
+      backdrop-filter: blur(2px);
     }
     .lesson:active { cursor: grabbing; }
-    .lesson:hover { border-color: var(--border); }
-
-    /* Dragging source — dim it */
-    .lesson.dragging {
-      opacity: 0.35;
-      border-color: var(--primary) !important;
+    .lesson:hover { 
+      border-color: var(--border);
+      background: #202024;
+      transform: translateX(3px);
     }
 
-    /* Drop indicator line — appears above/below a lesson */
+    /* Драґ-стиль: зменшення + прозорість */
+    .lesson.dragging {
+      opacity: 0.3;
+      transform: scale(0.98) rotate(0.5deg);
+      cursor: grabbing;
+      border-color: var(--primary);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      transition: none;
+    }
+
+    /* Анімація при додаванні/переміщенні */
+    .lesson.moving-animation {
+      animation: lessonPop 0.28s ease-out forwards;
+    }
+    @keyframes lessonPop {
+      0% { transform: scale(0.96); opacity: 0.7; background: #2a2a35; }
+      80% { transform: scale(1.01); }
+      100% { transform: scale(1); opacity: 1; background: var(--input-bg); }
+    }
+
+    /* Індикатор дропу */
     .drop-indicator {
       height: 3px;
-      border-radius: 2px;
+      border-radius: 4px;
       background: var(--primary);
-      margin: -5px 0 7px;
-      box-shadow: 0 0 8px rgba(139,92,246,0.6);
+      margin: -5px 0 8px;
+      box-shadow: 0 0 10px var(--primary);
       pointer-events: none;
-      animation: dropPulse 0.6s ease infinite alternate;
+      animation: pulseDrop 0.5s ease infinite alternate;
     }
-    @keyframes dropPulse {
-      from { opacity: 0.7; }
-      to   { opacity: 1; }
-    }
-
-    /* Drop-at-end indicator */
     .drop-indicator-end {
       height: 3px;
-      border-radius: 2px;
+      border-radius: 4px;
       background: var(--primary);
-      margin-top: 8px;
-      box-shadow: 0 0 8px rgba(139,92,246,0.6);
+      margin-top: 6px;
+      box-shadow: 0 0 8px var(--primary);
       pointer-events: none;
-      animation: dropPulse 0.6s ease infinite alternate;
+      animation: pulseDrop 0.5s ease infinite alternate;
+    }
+    @keyframes pulseDrop {
+      from { opacity: 0.6; width: 95%; }
+      to { opacity: 1; width: 100%; }
     }
 
     /* Drag handle */
     .drag-handle {
-      color: #3f3f46;
+      color: #52525b;
       cursor: grab;
       font-size: 1rem;
       flex-shrink: 0;
-      padding: 0 2px;
-      transition: color 0.15s;
       display: flex;
       align-items: center;
+      transition: color 0.2s;
     }
-    .lesson:hover .drag-handle { color: #71717a; }
-    .lesson:active .drag-handle { cursor: grabbing; }
+    .lesson:hover .drag-handle { color: #a1a1aa; }
 
+    /* Subject input */
     .subject-input {
       flex: 1;
       background: transparent;
@@ -212,194 +248,209 @@
       color: var(--text);
       font-size: 0.9rem;
       outline: none;
-      min-width: 0;
+      min-width: 100px;
+      padding: 6px 2px;
+      font-weight: 500;
     }
 
-    /* ── TIME INPUT FIX ──────────────────────────────────────────────
-       Use min-content sizing + nowrap so "(10:20 - 11:05)" never clips.
-       The input auto-sizes to its value via the size trick.           */
+    /* ========= НОВИЙ СТАБІЛЬНИЙ ТАЙМ-БЛОК ========= 
+       Фіксований розмір, але адаптивний до вмісту без розривів */
     .time-input {
       flex-shrink: 0;
-      width: auto;
-      min-width: 60px;
-      /* size attribute is set dynamically in JS */
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.4);
       color: var(--accent);
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 40px;
+      font-size: 0.75rem;
       font-weight: 700;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
       text-align: center;
-      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
-      transition: all 0.2s ease;
-      letter-spacing: 0.2px;
       white-space: nowrap;
-      overflow: visible;
+      width: auto;
+      min-width: 108px;      /* достатньо для "10:20 - 11:05" */
+      max-width: 140px;
+      transition: var(--transition-smooth);
+      letter-spacing: 0.2px;
+      box-shadow: inset 0 1px 1px rgba(0,0,0,0.2);
+      cursor: default;
     }
     .time-input:hover {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 0 10px var(--accent-glow);
+      background: rgba(245, 158, 11, 0.18);
+      border-color: var(--accent);
+      transform: scale(1.02);
     }
 
-    .btn-delete { background: none; border: none; color: #52525b; cursor: pointer; font-size: 1.2rem; flex-shrink: 0; }
-    .btn-delete:hover { color: var(--danger); }
+    .btn-delete {
+      background: none; border: none; color: #52525b; 
+      cursor: pointer; font-size: 1.3rem; font-weight: 700;
+      flex-shrink: 0; width: 28px; border-radius: 30px;
+      transition: 0.15s;
+    }
+    .btn-delete:hover { color: var(--danger); background: rgba(244,63,94,0.1); transform: scale(1.1); }
 
     .btn-add-row {
-      width: 100%; background: transparent; color: #71717a;
-      border: 1px dashed var(--border); padding: 12px;
-      border-radius: 10px; margin-top: 10px; cursor: pointer;
-      font-weight: 600; transition: border-color 0.2s, color 0.2s;
+      width: 100%; background: rgba(255,255,255,0.02);
+      color: #71717a;
+      border: 1px dashed var(--border);
+      padding: 12px;
+      border-radius: 20px;
+      margin-top: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
     }
-    .btn-add-row:hover { border-color: var(--primary); color: var(--primary); }
-
-    .btn-save {
-      background-color: var(--success); color: white;
-      border: none; padding: 12px 24px; border-radius: 10px;
-      font-weight: 600; cursor: pointer; display: none; margin-left: auto;
-    }
+    .btn-add-row:hover { border-color: var(--primary); color: var(--primary); background: rgba(139,92,246,0.05); }
 
     .template-item {
-      background: var(--input-bg); border: 1px solid var(--border);
-      padding: 12px; margin-bottom: 8px; border-radius: 8px;
-      cursor: grab; font-size: 0.85rem; transition: 0.2s;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      border-radius: 16px;
+      cursor: grab;
+      font-size: 0.85rem;
+      transition: 0.18s;
+      font-weight: 500;
     }
-    .template-item.block { border-color: var(--primary); color: var(--primary); background: rgba(139, 92, 246, 0.05); }
-    .template-item:hover { border-color: var(--primary); transform: translateX(4px); }
+    .template-item.block { border-left: 4px solid var(--primary); color: var(--primary); background: rgba(139,92,246,0.08); }
+    .template-item:hover { border-color: var(--primary); transform: translateX(5px); background: #23232b; }
 
-    h3 { margin-bottom: 15px; font-size: 0.8rem; color: #71717a; text-transform: uppercase; letter-spacing: 1px; }
+    h3 { margin-bottom: 16px; font-size: 0.75rem; color: #71717a; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+
+    /* доп анімація fade для переміщення */
+    .fade-in-up {
+      animation: fadeSlide 0.25s ease;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
-  <div class="toolbar">
-    <div class="file-input-container">
-      <input type="file" id="fileInput" accept=".json">
-      <button class="btn-upload-custom">📥 Завантажити JSON</button>
-    </div>
-
-    <div id="dateEditorContainer">
-      <span>📅</span>
-      <input type="text" id="weekDateInput" class="date-input-main" placeholder="Оберіть дати">
-    </div>
-    
-    <button id="saveBtn" class="btn-save" onclick="exportJSON()">📤 Зберегти JSON</button>
+<div class="toolbar">
+  <div class="file-input-container">
+    <input type="file" id="fileInput" accept=".json">
+    <button class="btn-upload-custom">📥 Завантажити JSON</button>
   </div>
+  <div id="dateEditorContainer">
+    <span>📅</span>
+    <input type="text" id="weekDateInput" class="date-input-main" placeholder="Оберіть дати">
+  </div>
+  <button id="saveBtn" class="btn-save" onclick="exportJSON()">📤 Зберегти JSON</button>
+</div>
 
-  <div class="container">
-    <div class="sidebar">
-      <h3>Швидкі блоки</h3>
-      <div id="blocks-list"></div>
-      
-      <h3 style="margin-top: 25px;">Предмети</h3>
-      <div id="templates-list"></div>
-    </div>
-
-    <div class="schedule-area" id="app">
-      <div style="text-align: center; grid-column: 1/-1; padding: 100px 20px; opacity: 0.3;">
-        <h2>Оберіть файл для початку</h2>
-      </div>
+<div class="container">
+  <div class="sidebar">
+    <h3>⚡ Швидкі блоки</h3>
+    <div id="blocks-list"></div>
+    <h3 style="margin-top: 28px;">📚 Предмети</h3>
+    <div id="templates-list"></div>
+  </div>
+  <div class="schedule-area" id="app">
+    <div style="text-align: center; grid-column: 1/-1; padding: 100px 20px; opacity: 0.45;">
+      <h2>📂 Оберіть JSON файл розкладу</h2>
+      <p style="margin-top: 10px;">Підтримується Drag & Drop уроків, блоків та предметів</p>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uk.js"></script>
 
 <script>
-/* ─────────────────────────────────────────────
-   STATE
-───────────────────────────────────────────── */
+/* -------------------------------------------------------------
+   ГЛОБАЛЬНИЙ СТАН
+------------------------------------------------------------- */
 let rawData = null, originalFileName = "schedule.json", fp = null;
 let config = { standardTimes: [], vnTimes: [], blocks: [], subjects: [] };
 
-// Drag state
 const drag = {
   active: false,
   sourceDay: null,
   sourceIndex: null,
-  type: null,       // 'lesson' | 'subject' | 'block'
+  type: null,      // 'lesson', 'subject', 'block'
   payload: null,
-  el: null,         // DOM element being dragged
+  el: null,
 };
 
-/* ─────────────────────────────────────────────
-   TEMPLATES / INIT
-───────────────────────────────────────────── */
+/* -------------------------------------------------------------
+   ЗАВАНТАЖЕННЯ ТЕМПЛЕЙТІВ (templates.json)
+------------------------------------------------------------- */
 async function loadTemplates() {
   try {
     const response = await fetch('templates.json');
     config = await response.json();
     initSidebar();
-  } catch(e) { console.error("Templates loading error", e); }
+  } catch(e) { 
+    console.warn("⚠️ templates.json не завантажено, використовую дефолтні");
+    config.blocks = config.blocks || [];
+    config.subjects = config.subjects || [];
+    config.standardTimes = config.standardTimes || [];
+    config.vnTimes = config.vnTimes || [];
+    initSidebar();
+  }
 }
 
 function initSidebar() {
-  const blocksList = document.getElementById("blocks-list");
-  config.blocks.forEach(b => {
-    const d = document.createElement("div");
-    d.className = "template-item block";
-    d.innerText = b.title;
-    d.draggable = true;
-    d.addEventListener('dragstart', () => {
-      drag.type = 'block'; drag.payload = b;
+  const blocksContainer = document.getElementById("blocks-list");
+  blocksContainer.innerHTML = "";
+  (config.blocks || []).forEach(b => {
+    const div = document.createElement("div");
+    div.className = "template-item block";
+    div.innerText = b.title;
+    div.draggable = true;
+    div.addEventListener('dragstart', (e) => {
+      drag.type = 'block'; 
+      drag.payload = b;
       drag.sourceDay = null; drag.sourceIndex = null;
+      e.dataTransfer.setData('text/plain', '');
+      e.dataTransfer.effectAllowed = 'copy';
     });
-    blocksList.appendChild(d);
+    blocksContainer.appendChild(div);
   });
 
-  const subjList = document.getElementById("templates-list");
-  config.subjects.forEach(s => {
-    const d = document.createElement("div");
-    d.className = "template-item";
-    d.innerText = s;
-    d.draggable = true;
-    d.addEventListener('dragstart', () => {
-      drag.type = 'subject'; drag.payload = s;
-      drag.sourceDay = null; drag.sourceIndex = null;
+  const subjectsContainer = document.getElementById("templates-list");
+  subjectsContainer.innerHTML = "";
+  (config.subjects || []).forEach(s => {
+    const div = document.createElement("div");
+    div.className = "template-item";
+    div.innerText = s;
+    div.draggable = true;
+    div.addEventListener('dragstart', (e) => {
+      drag.type = 'subject';
+      drag.payload = s;
+      drag.sourceDay = null;
+      e.dataTransfer.setData('text/plain', '');
+      e.dataTransfer.effectAllowed = 'copy';
     });
-    subjList.appendChild(d);
+    subjectsContainer.appendChild(div);
   });
 }
 
-function init() {
-  loadTemplates();
+function initFlatpickr() {
   fp = flatpickr("#weekDateInput", {
     mode: "range", dateFormat: "d.m.Y", locale: "uk"
   });
 }
 
-/* ─────────────────────────────────────────────
-   FILE LOAD
-───────────────────────────────────────────── */
-document.getElementById("fileInput").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  originalFileName = file.name;
-  const reader = new FileReader();
-  reader.onload = () => {
-    let data = JSON.parse(reader.result);
-    for (let day in data.schedule) {
-      data.schedule[day] = data.schedule[day].filter((_, i) => i % 2 === 0);
-    }
-    rawData = data;
-    document.getElementById("dateEditorContainer").style.display = "flex";
-    document.getElementById("saveBtn").style.display = "block";
-    if (rawData.date) fp.setDate(rawData.date.replace(/ - /g, ' to '));
-    render();
-  };
-  reader.readAsText(file);
-});
-
-/* ─────────────────────────────────────────────
-   RENDER
-───────────────────────────────────────────── */
+/* -------------------------------------------------------------
+   ОТРИМАННЯ ЧАСУ (стабільний вивід)
+------------------------------------------------------------- */
 function getTime(text, index) {
-  const isVN = text.includes("Виробниче навчання");
-  return isVN ? (config.vnTimes[index] || "(??:??)") : (config.standardTimes[index] || "(??:??)");
+  const isVN = text && text.includes("Виробниче навчання");
+  const timesArray = isVN ? (config.vnTimes || []) : (config.standardTimes || []);
+  let timeStr = timesArray[index] || "(??:??)";
+  // якщо порожній — заглушка
+  if (!timeStr || timeStr === "") timeStr = "(--)";
+  return timeStr;
 }
 
+/* -------------------------------------------------------------
+   РЕНДЕР ГОЛОВНОГО ІНТЕРФЕЙСУ
+------------------------------------------------------------- */
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
@@ -410,7 +461,6 @@ function render() {
     dayDiv.className = "day";
     dayDiv.dataset.day = day;
 
-    // Day header
     const header = document.createElement("div");
     header.className = "day-header";
     const titleInput = document.createElement("input");
@@ -420,150 +470,146 @@ function render() {
     header.appendChild(titleInput);
     dayDiv.appendChild(header);
 
-    // Lessons list
     const list = document.createElement("div");
     list.className = "lessons-list";
     list.dataset.day = day;
 
-    rawData.schedule[day].forEach((text, i) => {
-      const row = buildLessonEl(day, i, text);
-      list.appendChild(row);
+    rawData.schedule[day].forEach((text, idx) => {
+      const lessonRow = buildLessonElement(day, idx, text);
+      list.appendChild(lessonRow);
     });
 
-    // Drop zone events on list
+    // події для дроп зони
     list.addEventListener('dragover', onListDragOver);
     list.addEventListener('dragleave', onListDragLeave);
     list.addEventListener('drop', onListDrop);
-
     dayDiv.appendChild(list);
 
-    // Add button
     const addBtn = document.createElement("button");
     addBtn.className = "btn-add-row";
     addBtn.innerText = "➕ Додати предмет";
     addBtn.addEventListener('click', () => {
       rawData.schedule[day].push("Новий предмет");
-      render();
+      renderWithAnimation();
     });
     dayDiv.appendChild(addBtn);
-
     app.appendChild(dayDiv);
   }
 }
 
-function buildLessonEl(day, index, text) {
+/* Анімований рендер щоб елементи отримували легку анімацію появи */
+function renderWithAnimation() {
+  render();
+  setTimeout(() => {
+    document.querySelectorAll('.lesson').forEach(el => {
+      el.classList.add('moving-animation');
+      setTimeout(() => el.classList.remove('moving-animation'), 300);
+    });
+  }, 10);
+}
+
+/* побудова одного уроку */
+function buildLessonElement(day, index, subjectText) {
   const row = document.createElement("div");
   row.className = "lesson";
   row.draggable = true;
   row.dataset.day = day;
   row.dataset.index = index;
 
-  // Drag handle icon
   const handle = document.createElement("span");
   handle.className = "drag-handle";
-  handle.innerHTML = `<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
+  handle.innerHTML = `<svg width="14" height="16" viewBox="0 0 12 16" fill="currentColor">
     <circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/>
     <circle cx="3" cy="8" r="1.5"/><circle cx="9" cy="8" r="1.5"/>
     <circle cx="3" cy="13" r="1.5"/><circle cx="9" cy="13" r="1.5"/>
   </svg>`;
   row.appendChild(handle);
 
-  // Subject input
   const subjectInput = document.createElement("input");
   subjectInput.className = "subject-input";
-  subjectInput.value = text;
+  subjectInput.value = subjectText;
   subjectInput.addEventListener('input', () => {
     rawData.schedule[day][index] = subjectInput.value;
-    // Re-render if VN status changed (affects time display)
-    const wasVN = text.includes("Виробниче");
-    const isVN  = subjectInput.value.includes("Виробниче");
-    if (wasVN !== isVN) { text = subjectInput.value; render(); }
-    else text = subjectInput.value;
-    // Update time badge inline without full re-render
-    const newTime = getTime(subjectInput.value, index);
-    const timeEl = row.querySelector('.time-input');
-    if (timeEl) { timeEl.value = newTime; autoSizeInput(timeEl); }
+    // оновлюємо час без повного рендеру, просто оновлюємо тайм-блок
+    const wasVN = subjectText.includes("Виробниче");
+    const isVN = subjectInput.value.includes("Виробниче");
+    subjectText = subjectInput.value;
+    const newTimeVal = getTime(subjectInput.value, index);
+    const timeSpan = row.querySelector('.time-input');
+    if (timeSpan) {
+      timeSpan.value = newTimeVal;
+      // анімація блимання
+      timeSpan.style.transform = "scale(1.03)";
+      setTimeout(() => { if(timeSpan) timeSpan.style.transform = ""; }, 150);
+    }
+    if (wasVN !== isVN) {
+      renderWithAnimation();
+    }
   });
   row.appendChild(subjectInput);
 
-  // Time badge
-  const timeVal = getTime(text, index);
+  const timeValue = getTime(subjectText, index);
   const timeInput = document.createElement("input");
   timeInput.className = "time-input";
-  timeInput.value = timeVal;
+  timeInput.value = timeValue;
   timeInput.readOnly = true;
-  timeInput.title = timeVal;
-  // Auto-size to content
-  autoSizeInput(timeInput);
+  timeInput.title = timeValue;
   row.appendChild(timeInput);
 
-  // Delete button
   const delBtn = document.createElement("button");
   delBtn.className = "btn-delete";
-  delBtn.innerHTML = "×";
+  delBtn.innerHTML = "✕";
   delBtn.addEventListener('click', () => {
     rawData.schedule[day].splice(index, 1);
-    render();
+    renderWithAnimation();
   });
   row.appendChild(delBtn);
 
-  // Drag events
-  row.addEventListener('dragstart', e => onLessonDragStart(e, row, day, index));
-  row.addEventListener('dragend',   onLessonDragEnd);
+  // drag events
+  row.addEventListener('dragstart', (e) => onLessonDragStart(e, row, day, index));
+  row.addEventListener('dragend', onLessonDragEnd);
 
   return row;
 }
 
-/* Auto-size input to its content using the `size` attribute */
-function autoSizeInput(input) {
-  // size attribute = number of characters; add 1 for a little breathing room
-  input.size = Math.max(input.value.length + 1, 6);
-}
-
-/* ─────────────────────────────────────────────
-   DRAG & DROP — LESSONS
-───────────────────────────────────────────── */
+/* -------------------------------------------------------------
+   ДРАГ ЛОГІКА УРОКІВ
+------------------------------------------------------------- */
 function onLessonDragStart(e, el, day, index) {
-  drag.active     = true;
-  drag.type       = 'lesson';
-  drag.sourceDay  = day;
+  drag.active = true;
+  drag.type = 'lesson';
+  drag.sourceDay = day;
   drag.sourceIndex = index;
-  drag.el         = el;
-
-  // Slight delay so the ghost snapshot is taken before class is applied
+  drag.el = el;
   requestAnimationFrame(() => el.classList.add('dragging'));
-
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', ''); // required for Firefox
+  e.dataTransfer.setData('text/plain', `${day}|${index}`);
 }
 
 function onLessonDragEnd() {
   drag.active = false;
-  drag.el && drag.el.classList.remove('dragging');
+  if (drag.el) drag.el.classList.remove('dragging');
   drag.el = null;
   clearAllIndicators();
   clearDayHighlights();
+  drag.type = null;
 }
 
-/* ─────────────────────────────────────────────
-   DRAG & DROP — LIST (DROP ZONE)
-───────────────────────────────────────────── */
+/* -------------------------------------------------------------
+   ОБРОБКА LIST (DROP ZONE)
+------------------------------------------------------------- */
 function onListDragOver(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-
   const list = e.currentTarget;
   const dayEl = list.closest('.day');
   clearDayHighlights();
-  dayEl.classList.add('drag-over-day');
-
-  // Calculate insert position
-  const { targetIndex, position } = getDropPosition(list, e.clientY);
-  renderDropIndicator(list, targetIndex, position);
+  if (dayEl) dayEl.classList.add('drag-over-day');
+  const { targetIndex } = getDropPosition(list, e.clientY);
+  renderDropIndicator(list, targetIndex);
 }
 
 function onListDragLeave(e) {
-  // Only clear if truly leaving the list (not entering a child)
   if (!e.currentTarget.contains(e.relatedTarget)) {
     clearAllIndicators();
     clearDayHighlights();
@@ -574,102 +620,79 @@ function onListDrop(e) {
   e.preventDefault();
   clearAllIndicators();
   clearDayHighlights();
-
   if (!drag.active && drag.type === null) return;
-
   const list = e.currentTarget;
   const targetDay = list.dataset.day;
   const { targetIndex } = getDropPosition(list, e.clientY);
-
   performDrop(targetDay, targetIndex);
 }
 
-/* ─────────────────────────────────────────────
-   DROP LOGIC
-───────────────────────────────────────────── */
+/* Виконання переміщення/вставки */
 function performDrop(targetDay, targetIndex) {
   if (!rawData) return;
-
   let itemsToInsert = [];
 
   if (drag.type === 'subject') {
     itemsToInsert = [drag.payload];
   } else if (drag.type === 'block') {
-    itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
-  } else if (drag.type === 'lesson') {
-    const srcDay   = drag.sourceDay;
+    if (drag.payload && drag.payload.count) {
+      itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
+    } else itemsToInsert = ["Новий блок"];
+  } else if (drag.type === 'lesson' && drag.sourceDay !== undefined) {
+    const srcDay = drag.sourceDay;
     const srcIndex = drag.sourceIndex;
-
-    // Remove from source
     const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
     itemsToInsert = [removed];
-
-    // Adjust targetIndex if same-day move and target is after source
+    // корекція індексу якщо той самий день та позиція після видаленого
     if (srcDay === targetDay && targetIndex > srcIndex) {
-      // index already adjusted since we spliced before
+      // нічого, вже вірно
     }
   }
 
   if (itemsToInsert.length === 0) return;
-
-  // Insert at target position
   const arr = rawData.schedule[targetDay];
   const insertAt = Math.min(targetIndex, arr.length);
   arr.splice(insertAt, 0, ...itemsToInsert);
-
-  render();
+  renderWithAnimation();
 }
 
-/* ─────────────────────────────────────────────
-   DROP POSITION CALCULATION
-───────────────────────────────────────────── */
+/* Обчислення позиції вставки */
 function getDropPosition(list, clientY) {
-  const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
-
-  if (lessonEls.length === 0) return { targetIndex: 0, position: 'before' };
-
-  for (let i = 0; i < lessonEls.length; i++) {
-    const rect = lessonEls[i].getBoundingClientRect();
-    const mid  = rect.top + rect.height / 2;
+  const lessons = [...list.querySelectorAll('.lesson:not(.dragging)')];
+  if (lessons.length === 0) return { targetIndex: 0 };
+  for (let i = 0; i < lessons.length; i++) {
+    const rect = lessons[i].getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
     if (clientY < mid) {
-      return { targetIndex: parseInt(lessonEls[i].dataset.index), position: 'before' };
+      return { targetIndex: parseInt(lessons[i].dataset.index, 10) };
     }
   }
-  // After last
-  const lastIndex = parseInt(lessonEls[lessonEls.length - 1].dataset.index);
-  return { targetIndex: lastIndex + 1, position: 'after' };
+  const lastIdx = parseInt(lessons[lessons.length-1].dataset.index, 10);
+  return { targetIndex: lastIdx + 1 };
 }
 
-/* ─────────────────────────────────────────────
-   DROP INDICATOR RENDERING
-───────────────────────────────────────────── */
-function renderDropIndicator(list, targetIndex, position) {
+function renderDropIndicator(list, targetIndex) {
   clearAllIndicators();
-
-  const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
+  const lessons = [...list.querySelectorAll('.lesson:not(.dragging)')];
   const indicator = document.createElement("div");
   indicator.className = "drop-indicator";
   indicator.dataset.indicator = "true";
-
-  if (lessonEls.length === 0) {
+  
+  if (lessons.length === 0) {
     indicator.className = "drop-indicator-end";
     list.appendChild(indicator);
     return;
   }
-
-  // Find the DOM lesson with matching index
-  const targetEl = lessonEls.find(el => parseInt(el.dataset.index) === targetIndex);
-  if (targetEl) {
-    list.insertBefore(indicator, targetEl);
+  const targetLesson = lessons.find(el => parseInt(el.dataset.index, 10) === targetIndex);
+  if (targetLesson) {
+    list.insertBefore(indicator, targetLesson);
   } else {
-    // Append at end
     indicator.className = "drop-indicator-end";
     list.appendChild(indicator);
   }
 }
 
 function clearAllIndicators() {
-  document.querySelectorAll('[data-indicator]').forEach(el => el.remove());
   document.querySelectorAll('.drop-indicator, .drop-indicator-end').forEach(el => el.remove());
 }
 
@@ -677,24 +700,20 @@ function clearDayHighlights() {
   document.querySelectorAll('.day.drag-over-day').forEach(el => el.classList.remove('drag-over-day'));
 }
 
-/* ─────────────────────────────────────────────
-   DAY RENAME
-───────────────────────────────────────────── */
-function updateDay(oldN, newN) {
-  if (oldN === newN) return;
+/* Оновлення назви дня */
+function updateDay(oldName, newName) {
+  if (oldName === newName || !newName.trim()) return;
   const entries = Object.entries(rawData.schedule);
   rawData.schedule = Object.fromEntries(
-    entries.map(([k, v]) => [k === oldN ? newN : k, v])
+    entries.map(([k, v]) => [k === oldName ? newName : k, v])
   );
-  render();
+  renderWithAnimation();
 }
 
-/* ─────────────────────────────────────────────
-   EXPORT
-───────────────────────────────────────────── */
+/* ЕКСПОРТ */
 function exportJSON() {
+  if (!rawData) return alert("Немає даних для експорту");
   let exportData = JSON.parse(JSON.stringify(rawData));
-  
   let dateVal = document.getElementById("weekDateInput").value;
   if (dateVal.includes(" to ")) {
     exportData.date = dateVal.split(" to ").map(d => {
@@ -705,24 +724,52 @@ function exportJSON() {
     const parts = dateVal.split('.');
     exportData.date = `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
   }
-
+  // формуємо фінальний масив з чергуванням предмет/час
   for (let day in exportData.schedule) {
     let formatted = [];
-    exportData.schedule[day].forEach((subj, i) => {
-      const time = getTime(subj, i);
+    exportData.schedule[day].forEach((subj, idx) => {
+      const time = getTime(subj, idx);
       formatted.push(subj, time);
     });
     exportData.schedule[day] = formatted;
   }
-
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = originalFileName;
   a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-init();
+/* Обробка завантаження файлу */
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  originalFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    let data = JSON.parse(ev.target.result);
+    // фільтрація непарних (часів) якщо було збережено в старому форматі
+    for (let day in data.schedule) {
+      if (Array.isArray(data.schedule[day])) {
+        data.schedule[day] = data.schedule[day].filter((_, idx) => idx % 2 === 0);
+      }
+    }
+    rawData = data;
+    document.getElementById("dateEditorContainer").style.display = "flex";
+    document.getElementById("saveBtn").style.display = "block";
+    if (rawData.date) fp.setDate(rawData.date.replace(/ - /g, ' to '));
+    renderWithAnimation();
+  };
+  reader.readAsText(file);
+});
+
+/* Старт */
+async function start() {
+  await loadTemplates();
+  initFlatpickr();
+}
+start();
 </script>
 </body>
 </html>
