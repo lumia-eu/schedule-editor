@@ -152,7 +152,7 @@
       align-items: center;
       cursor: grab;
       border: 1px solid transparent;
-      transition: border-color 0.15s, opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s, opacity 0.15s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s;
       user-select: none;
       position: relative;
     }
@@ -163,6 +163,7 @@
     .lesson.dragging {
       opacity: 0.35;
       border-color: var(--primary) !important;
+      transform: scale(0.97);
     }
 
     /* Drop indicator line — appears above/below a lesson */
@@ -215,14 +216,13 @@
       min-width: 0;
     }
 
-    /* ── TIME INPUT FIX ──────────────────────────────────────────────
-       Use min-content sizing + nowrap so "(10:20 - 11:05)" never clips.
-       The input auto-sizes to its value via the size trick.           */
+    /* ── TIME BLOCKS ──────────────────────────────────────────────
+       Усі тайм-блоки тепер СЕМЕРИЧНІ (однакового розміру) і не відрізняються один від одного.
+       Ширина 150px — достатньо, щоб будь-яке значення часу (навіть "10:20 - 11:05")
+       чітко вміщувалося без обрізання, без динамічного ресайзу і без "плаваючих" блоків. */
     .time-input {
       flex-shrink: 0;
-      width: auto;
-      min-width: 60px;
-      /* size attribute is set dynamically in JS */
+      width: 150px;                    /* ФІКСОВАНА ширина — всі блоки однакові */
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
       border: 1px solid rgba(245, 158, 11, 0.25);
       color: var(--accent);
@@ -236,7 +236,8 @@
       transition: all 0.2s ease;
       letter-spacing: 0.2px;
       white-space: nowrap;
-      overflow: visible;
+      overflow: hidden;
+      text-overflow: clip;
     }
     .time-input:hover {
       background: rgba(245, 158, 11, 0.12);
@@ -473,28 +474,23 @@ function buildLessonEl(day, index, text) {
   subjectInput.className = "subject-input";
   subjectInput.value = text;
   subjectInput.addEventListener('input', () => {
+    // Оновлюємо дані
     rawData.schedule[day][index] = subjectInput.value;
-    // Re-render if VN status changed (affects time display)
-    const wasVN = text.includes("Виробниче");
-    const isVN  = subjectInput.value.includes("Виробниче");
-    if (wasVN !== isVN) { text = subjectInput.value; render(); }
-    else text = subjectInput.value;
-    // Update time badge inline without full re-render
+
+    // Оновлюємо тільки тайм-блок цього рядка (VN / standard залежить тільки від предмета в цьому слоті)
     const newTime = getTime(subjectInput.value, index);
     const timeEl = row.querySelector('.time-input');
-    if (timeEl) { timeEl.value = newTime; autoSizeInput(timeEl); }
+    if (timeEl) timeEl.value = newTime;
   });
   row.appendChild(subjectInput);
 
-  // Time badge
+  // Time badge — тепер завжди однакового розміру
   const timeVal = getTime(text, index);
   const timeInput = document.createElement("input");
   timeInput.className = "time-input";
   timeInput.value = timeVal;
   timeInput.readOnly = true;
   timeInput.title = timeVal;
-  // Auto-size to content
-  autoSizeInput(timeInput);
   row.appendChild(timeInput);
 
   // Delete button
@@ -512,12 +508,6 @@ function buildLessonEl(day, index, text) {
   row.addEventListener('dragend',   onLessonDragEnd);
 
   return row;
-}
-
-/* Auto-size input to its content using the `size` attribute */
-function autoSizeInput(input) {
-  // size attribute = number of characters; add 1 for a little breathing room
-  input.size = Math.max(input.value.length + 1, 6);
 }
 
 /* ─────────────────────────────────────────────
@@ -563,7 +553,6 @@ function onListDragOver(e) {
 }
 
 function onListDragLeave(e) {
-  // Only clear if truly leaving the list (not entering a child)
   if (!e.currentTarget.contains(e.relatedTarget)) {
     clearAllIndicators();
     clearDayHighlights();
@@ -603,11 +592,6 @@ function performDrop(targetDay, targetIndex) {
     // Remove from source
     const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
     itemsToInsert = [removed];
-
-    // Adjust targetIndex if same-day move and target is after source
-    if (srcDay === targetDay && targetIndex > srcIndex) {
-      // index already adjusted since we spliced before
-    }
   }
 
   if (itemsToInsert.length === 0) return;
@@ -657,12 +641,10 @@ function renderDropIndicator(list, targetIndex, position) {
     return;
   }
 
-  // Find the DOM lesson with matching index
   const targetEl = lessonEls.find(el => parseInt(el.dataset.index) === targetIndex);
   if (targetEl) {
     list.insertBefore(indicator, targetEl);
   } else {
-    // Append at end
     indicator.className = "drop-indicator-end";
     list.appendChild(indicator);
   }
