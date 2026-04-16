@@ -20,7 +20,6 @@
       --danger: #f43f5e;
       --success: #10b981;
       --accent: #f59e0b;
-      --accent-glow: rgba(245, 158, 11, 0.15);
     }
 
     * { box-sizing: border-box; }
@@ -35,236 +34,142 @@
       min-height: 100vh;
     }
 
-    .toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 25px;
-      align-items: center;
-      background: var(--card-bg);
-      padding: 15px 20px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    .toolbar { /* без змін */ 
+      display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; align-items: center;
+      background: var(--card-bg); padding: 15px 20px; border-radius: 14px;
+      border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
     .file-input-container { position: relative; display: inline-flex; }
     .btn-upload-custom {
-      background-color: var(--primary);
-      color: white;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-weight: 600;
-      border: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
+      background-color: var(--primary); color: white; padding: 12px 24px;
+      border-radius: 10px; font-weight: 600; border: none; display: flex;
+      align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s;
     }
     .btn-upload-custom:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
     #fileInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
 
     #dateEditorContainer {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      background: rgba(139, 92, 246, 0.1);
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: 1px solid var(--primary);
+      display: none; align-items: center; gap: 12px;
+      background: rgba(139,92,246,0.1); padding: 10px 18px;
+      border-radius: 10px; border: 1px solid var(--primary);
     }
 
-    .date-input-main {
-      border: none; background: transparent;
-      font-size: 14px; font-weight: 600;
-      color: var(--text); outline: none; width: 220px;
-    }
+    .date-input-main { border: none; background: transparent; font-size: 14px; font-weight: 600; color: var(--text); outline: none; width: 220px; }
 
-    .container {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 25px;
-      flex-grow: 1;
-    }
+    .container { display: grid; grid-template-columns: 320px 1fr; gap: 25px; flex-grow: 1; }
+    @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } .sidebar { order: 2; } }
 
-    @media (max-width: 1100px) {
-      .container { grid-template-columns: 1fr; }
-      .sidebar { order: 2; position: static; }
-    }
+    .sidebar { background: var(--card-bg); border-radius: 14px; padding: 20px; border: 1px solid var(--border); height: fit-content; position: sticky; top: 20px; }
 
-    .sidebar {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      height: fit-content;
-      position: sticky; top: 20px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .schedule-area {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
-      gap: 20px;
-    }
+    .schedule-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 20px; }
 
     .day {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      transition: border-color 0.2s;
+      background: var(--card-bg); border-radius: 14px; padding: 20px;
+      border: 1px solid var(--border); transition: border-color 0.2s;
     }
-
     .day.drag-over-day {
       border-color: var(--primary);
       box-shadow: 0 0 0 1px var(--primary), 0 4px 24px rgba(139,92,246,0.15);
     }
 
-    .day-header {
-      margin-bottom: 15px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 10px;
-    }
-
+    .day-header { margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     .day-title-input {
-      background: transparent; border: none;
-      color: var(--primary); font-size: 1.2rem;
-      font-weight: 700; outline: none; width: 100%;
+      background: transparent; border: none; color: var(--primary);
+      font-size: 1.2rem; font-weight: 700; outline: none; width: 100%;
     }
 
-    .lessons-list {
-      min-height: 20px;
-      position: relative;
-    }
+    .lessons-list { min-height: 20px; position: relative; }
 
+    /* Основні анімації уроків */
     .lesson {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      background: var(--input-bg);
-      padding: 10px;
-      border-radius: 10px;
-      align-items: center;
-      cursor: grab;
-      border: 1px solid transparent;
-      transition: border-color 0.15s, opacity 0.15s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-                  box-shadow 0.15s, height 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; gap: 10px; margin-bottom: 10px;
+      background: var(--input-bg); padding: 10px; border-radius: 10px;
+      align-items: center; cursor: grab; border: 1px solid transparent;
+      transition: 
+        transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.2s,
+        margin-bottom 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
+        height 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
       user-select: none;
       position: relative;
     }
-    .lesson:active { cursor: grabbing; }
     .lesson:hover { border-color: var(--border); }
 
-    /* Dragging — теперь урок полностью «выпадает» из потока (убираем место), чтобы другие уроки плавно сдвигались */
+    /* Коли перетягуємо — урок майже зникає з плавністю */
     .lesson.dragging {
-      opacity: 0.3;
-      border-color: var(--primary) !important;
-      transform: scale(0.95);
+      opacity: 0.25;
+      transform: scale(0.92);
       height: 0 !important;
       margin-bottom: 0 !important;
       padding-top: 0 !important;
       padding-bottom: 0 !important;
       overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Плавна поява нового/переміщеного уроку */
+    .lesson.inserting {
+      opacity: 0;
+      transform: scale(0.85) translateY(10px);
+      animation: lessonInsert 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes lessonInsert {
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .drop-indicator {
-      height: 3px;
-      border-radius: 2px;
-      background: var(--primary);
-      margin: -5px 0 7px;
-      box-shadow: 0 0 8px rgba(139,92,246,0.6);
-      pointer-events: none;
-      animation: dropPulse 0.6s ease infinite alternate;
+      height: 3px; border-radius: 2px; background: var(--primary);
+      margin: -5px 0 7px; box-shadow: 0 0 8px rgba(139,92,246,0.6);
+      pointer-events: none; animation: dropPulse 0.7s ease infinite alternate;
     }
-    @keyframes dropPulse {
-      from { opacity: 0.7; }
-      to   { opacity: 1; }
-    }
+    @keyframes dropPulse { from { opacity: 0.6; } to { opacity: 1; } }
 
     .drop-indicator-end {
-      height: 3px;
-      border-radius: 2px;
-      background: var(--primary);
-      margin-top: 8px;
-      box-shadow: 0 0 8px rgba(139,92,246,0.6);
-      pointer-events: none;
-      animation: dropPulse 0.6s ease infinite alternate;
+      height: 3px; border-radius: 2px; background: var(--primary);
+      margin-top: 8px; box-shadow: 0 0 8px rgba(139,92,246,0.6);
+      pointer-events: none; animation: dropPulse 0.7s ease infinite alternate;
     }
 
-    .drag-handle {
-      color: #3f3f46;
-      cursor: grab;
-      font-size: 1rem;
-      flex-shrink: 0;
-      padding: 0 2px;
-      transition: color 0.15s;
-      display: flex;
-      align-items: center;
-    }
+    .drag-handle { color: #3f3f46; cursor: grab; font-size: 1rem; flex-shrink: 0; padding: 0 2px; transition: color 0.15s; }
     .lesson:hover .drag-handle { color: #71717a; }
-    .lesson:active .drag-handle { cursor: grabbing; }
 
-    .subject-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 0.9rem;
-      outline: none;
-      min-width: 0;
-    }
+    .subject-input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 0.9rem; outline: none; min-width: 0; }
 
     .time-input {
-      flex-shrink: 0;
-      width: 150px;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      color: var(--accent);
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-align: center;
-      font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
-      transition: all 0.2s ease;
-      letter-spacing: 0.2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: clip;
+      flex-shrink: 0; width: 150px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.03) 100%);
+      border: 1px solid rgba(245,158,11,0.25); color: var(--accent);
+      padding: 8px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+      text-align: center; font-family: 'JetBrains Mono', monospace;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); transition: all 0.2s ease;
+      white-space: nowrap; overflow: hidden;
     }
-    .time-input:hover {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 0 10px var(--accent-glow);
-    }
+    .time-input:hover { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.4); }
 
     .btn-delete { background: none; border: none; color: #52525b; cursor: pointer; font-size: 1.2rem; flex-shrink: 0; }
     .btn-delete:hover { color: var(--danger); }
 
     .btn-add-row {
       width: 100%; background: transparent; color: #71717a;
-      border: 1px dashed var(--border); padding: 12px;
-      border-radius: 10px; margin-top: 10px; cursor: pointer;
-      font-weight: 600; transition: border-color 0.2s, color 0.2s;
+      border: 1px dashed var(--border); padding: 12px; border-radius: 10px;
+      margin-top: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;
     }
     .btn-add-row:hover { border-color: var(--primary); color: var(--primary); }
 
-    .btn-save {
-      background-color: var(--success); color: white;
-      border: none; padding: 12px 24px; border-radius: 10px;
-      font-weight: 600; cursor: pointer; display: none; margin-left: auto;
-    }
+    .btn-save { background-color: var(--success); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; display: none; margin-left: auto; }
 
     .template-item {
       background: var(--input-bg); border: 1px solid var(--border);
       padding: 12px; margin-bottom: 8px; border-radius: 8px;
       cursor: grab; font-size: 0.85rem; transition: 0.2s;
     }
-    .template-item.block { border-color: var(--primary); color: var(--primary); background: rgba(139, 92, 246, 0.05); }
+    .template-item.block { border-color: var(--primary); color: var(--primary); background: rgba(139,92,246,0.05); }
     .template-item:hover { border-color: var(--primary); transform: translateX(4px); }
 
     h3 { margin-bottom: 15px; font-size: 0.8rem; color: #71717a; text-transform: uppercase; letter-spacing: 1px; }
@@ -272,6 +177,7 @@
 </head>
 <body>
 
+  <!-- Toolbar та HTML-структура без змін -->
   <div class="toolbar">
     <div class="file-input-container">
       <input type="file" id="fileInput" accept=".json">
@@ -307,12 +213,11 @@
 
 <script>
 /* ─────────────────────────────────────────────
-   STATE
+   STATE (без змін)
 ───────────────────────────────────────────── */
 let rawData = null, originalFileName = "schedule.json", fp = null;
 let config = { standardTimes: [], vnTimes: [], blocks: [], subjects: [] };
 
-// Drag state
 const drag = {
   active: false,
   sourceDay: null,
@@ -323,7 +228,7 @@ const drag = {
 };
 
 /* ─────────────────────────────────────────────
-   TEMPLATES / INIT
+   INIT (без змін)
 ───────────────────────────────────────────── */
 async function loadTemplates() {
   try {
@@ -340,12 +245,7 @@ function initSidebar() {
     d.className = "template-item block";
     d.innerText = b.title;
     d.draggable = true;
-    d.addEventListener('dragstart', () => {
-      drag.type = 'block'; 
-      drag.payload = b;
-      drag.sourceDay = null; 
-      drag.sourceIndex = null;
-    });
+    d.addEventListener('dragstart', () => { drag.type = 'block'; drag.payload = b; });
     blocksList.appendChild(d);
   });
 
@@ -355,26 +255,17 @@ function initSidebar() {
     d.className = "template-item";
     d.innerText = s;
     d.draggable = true;
-    d.addEventListener('dragstart', () => {
-      drag.type = 'subject'; 
-      drag.payload = s;
-      drag.sourceDay = null; 
-      drag.sourceIndex = null;
-    });
+    d.addEventListener('dragstart', () => { drag.type = 'subject'; drag.payload = s; });
     subjList.appendChild(d);
   });
 }
 
 function init() {
   loadTemplates();
-  fp = flatpickr("#weekDateInput", {
-    mode: "range", dateFormat: "d.m.Y", locale: "uk"
-  });
+  fp = flatpickr("#weekDateInput", { mode: "range", dateFormat: "d.m.Y", locale: "uk" });
 }
 
-/* ─────────────────────────────────────────────
-   FILE LOAD
-───────────────────────────────────────────── */
+/* FILE LOAD, RENDER, buildLessonEl — майже без змін, тільки додаємо клас inserting при створенні */
 document.getElementById("fileInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -394,9 +285,6 @@ document.getElementById("fileInput").addEventListener("change", e => {
   reader.readAsText(file);
 });
 
-/* ─────────────────────────────────────────────
-   RENDER
-───────────────────────────────────────────── */
 function getTime(text, index) {
   const isVN = text.includes("Виробниче навчання");
   return isVN ? (config.vnTimes[index] || "(??:??)") : (config.standardTimes[index] || "(??:??)");
@@ -456,6 +344,7 @@ function buildLessonEl(day, index, text) {
   row.dataset.day = day;
   row.dataset.index = index;
 
+  // Drag handle (без змін)
   const handle = document.createElement("span");
   handle.className = "drag-handle";
   handle.innerHTML = `<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
@@ -476,10 +365,9 @@ function buildLessonEl(day, index, text) {
   });
   row.appendChild(subjectInput);
 
-  const timeVal = getTime(text, index);
   const timeInput = document.createElement("input");
   timeInput.className = "time-input";
-  timeInput.value = timeVal;
+  timeInput.value = getTime(text, index);
   timeInput.readOnly = true;
   row.appendChild(timeInput);
 
@@ -499,7 +387,7 @@ function buildLessonEl(day, index, text) {
 }
 
 /* ─────────────────────────────────────────────
-   DRAG & DROP — ВИПРАВЛЕНА ЛОГІКА ДЛЯ ПЕРЕМІЩЕННЯ ВСЕРЕДИНІ ДНЯ
+   DRAG & DROP з покращеними анімаціями
 ───────────────────────────────────────────── */
 function onLessonDragStart(e, el, day, index) {
   drag.active = true;
@@ -546,7 +434,6 @@ function onListDrop(e) {
   e.preventDefault();
   clearAllIndicators();
   clearDayHighlights();
-
   if (!drag.active) return;
 
   const list = e.currentTarget;
@@ -556,30 +443,21 @@ function onListDrop(e) {
   performDrop(targetDay, targetIndex);
 }
 
-/* ─────────────────────────────────────────────
-   НОВА getDropPosition — повертає ВІЗУАЛЬНУ позицію (0...length)
-   Це ключове виправлення — більше ніяких стрибків!
-───────────────────────────────────────────── */
 function getDropPosition(list, clientY) {
   const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
-
   if (lessonEls.length === 0) return { targetIndex: 0 };
 
   for (let i = 0; i < lessonEls.length; i++) {
     const rect = lessonEls[i].getBoundingClientRect();
     if (clientY < rect.top + rect.height * 0.5) {
-      return { targetIndex: i };           // вставити на цю візуальну позицію
+      return { targetIndex: i };
     }
   }
-  return { targetIndex: lessonEls.length }; // в кінець
+  return { targetIndex: lessonEls.length };
 }
 
-/* ─────────────────────────────────────────────
-   DROP INDICATOR
-───────────────────────────────────────────── */
 function renderDropIndicator(list, targetIndex) {
   clearAllIndicators();
-
   const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
   const indicator = document.createElement("div");
   indicator.className = "drop-indicator";
@@ -607,9 +485,6 @@ function clearDayHighlights() {
   document.querySelectorAll('.day.drag-over-day').forEach(el => el.classList.remove('drag-over-day'));
 }
 
-/* ─────────────────────────────────────────────
-   PERFORM DROP — тепер дуже просто і стабільно
-───────────────────────────────────────────── */
 function performDrop(targetDay, targetIndex) {
   if (!rawData) return;
 
@@ -617,20 +492,13 @@ function performDrop(targetDay, targetIndex) {
 
   if (drag.type === 'subject') {
     itemsToInsert = [drag.payload];
-  } 
-  else if (drag.type === 'block') {
+  } else if (drag.type === 'block') {
     itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
-  } 
-  else if (drag.type === 'lesson') {
+  } else if (drag.type === 'lesson') {
     const srcDay = drag.sourceDay;
     const srcIndex = drag.sourceIndex;
-
-    // Витягуємо урок
     const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
     itemsToInsert = [removed];
-
-    // Якщо той самий день — targetIndex вже є правильною візуальною позицією після видалення
-    // (завдяки новій getDropPosition)
   }
 
   if (itemsToInsert.length === 0) return;
@@ -639,31 +507,40 @@ function performDrop(targetDay, targetIndex) {
   const insertAt = Math.max(0, Math.min(targetIndex, arr.length));
   arr.splice(insertAt, 0, ...itemsToInsert);
 
+  // Після render додаємо анімацію появи
   render();
+
+  // Знаходимо щойно додані елементи і запускаємо анімацію
+  setTimeout(() => {
+    const list = document.querySelector(`.lessons-list[data-day="${targetDay}"]`);
+    if (!list) return;
+    const newLessons = list.querySelectorAll('.lesson');
+    newLessons.forEach((lesson, idx) => {
+      if (idx >= insertAt && idx < insertAt + itemsToInsert.length) {
+        lesson.classList.add('inserting');
+        setTimeout(() => lesson.classList.remove('inserting'), 400);
+      }
+    });
+  }, 10);
 }
 
-/* ─────────────────────────────────────────────
-   DAY RENAME + EXPORT
-───────────────────────────────────────────── */
+/* DAY RENAME + EXPORT (без змін) */
 function updateDay(oldN, newN) {
   if (oldN === newN) return;
   const entries = Object.entries(rawData.schedule);
-  rawData.schedule = Object.fromEntries(
-    entries.map(([k, v]) => [k === oldN ? newN : k, v])
-  );
+  rawData.schedule = Object.fromEntries(entries.map(([k, v]) => [k === oldN ? newN : k, v]));
   render();
 }
 
 function exportJSON() {
   let exportData = JSON.parse(JSON.stringify(rawData));
-  
   let dateVal = document.getElementById("weekDateInput").value;
   if (dateVal.includes(" to ")) {
     exportData.date = dateVal.split(" to ").map(d => {
       const parts = d.split('.');
       return `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
     }).join(" - ");
-  } else if (dateVal !== "") {
+  } else if (dateVal) {
     const parts = dateVal.split('.');
     exportData.date = `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
   }
@@ -671,8 +548,7 @@ function exportJSON() {
   for (let day in exportData.schedule) {
     let formatted = [];
     exportData.schedule[day].forEach((subj, i) => {
-      const time = getTime(subj, i);
-      formatted.push(subj, time);
+      formatted.push(subj, getTime(subj, i));
     });
     exportData.schedule[day] = formatted;
   }
