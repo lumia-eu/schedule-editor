@@ -10,9 +10,9 @@
 
   <style>
     :root {
-      --primary: #8b5cf6; /* Более сочный фиолетовый */
+      --primary: #8b5cf6;
       --primary-hover: #7c3aed;
-      --bg: #09090b; /* Строгий глубокий черный */
+      --bg: #09090b;
       --card-bg: #18181b;
       --text: #fafafa;
       --border: #27272a;
@@ -20,7 +20,7 @@
       --danger: #f43f5e;
       --success: #10b981;
       --accent: #f59e0b;
-      --glow: 0 0 15px rgba(139, 92, 246, 0.2);
+      --accent-glow: rgba(245, 158, 11, 0.15);
     }
 
     * { box-sizing: border-box; }
@@ -60,13 +60,9 @@
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
-    .btn-upload-custom:hover {
-      background-color: var(--primary-hover);
-      box-shadow: var(--glow);
-      transform: translateY(-1px);
-    }
+    .btn-upload-custom:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
     #fileInput { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
 
     #dateEditorContainer {
@@ -77,14 +73,12 @@
       padding: 10px 18px;
       border-radius: 10px;
       border: 1px solid var(--primary);
-      transition: box-shadow 0.2s ease;
     }
-    #dateEditorContainer:focus-within { box-shadow: var(--glow); }
 
     .date-input-main {
       border: none; background: transparent;
       font-size: 14px; font-weight: 600;
-      color: var(--text); outline: none; width: 170px;
+      color: var(--text); outline: none; width: 190px;
     }
 
     .container {
@@ -96,7 +90,7 @@
 
     @media (max-width: 1100px) {
       .container { grid-template-columns: 1fr; }
-      .sidebar { order: 2; position: static; }
+      .sidebar { order: 2; }
     }
 
     .sidebar {
@@ -106,16 +100,14 @@
       border: 1px solid var(--border);
       height: fit-content;
       position: sticky; top: 20px;
-      max-height: calc(100vh - 40px);
+      max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .schedule-area {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
       gap: 20px;
-      align-content: start;
     }
 
     .day {
@@ -123,9 +115,7 @@
       border-radius: 14px;
       padding: 20px;
       border: 1px solid var(--border);
-      transition: border-color 0.2s;
     }
-    .day:hover { border-color: #3f3f46; }
 
     .day-header {
       margin-bottom: 15px;
@@ -149,10 +139,9 @@
       align-items: center;
       cursor: grab;
       border: 1px solid transparent;
-      transition: all 0.2s ease;
+      transition: border-color 0.2s;
     }
     .lesson:hover { border-color: var(--border); }
-    .lesson:active { cursor: grabbing; }
 
     .subject-input {
       flex: 1;
@@ -161,52 +150,56 @@
       color: var(--text);
       font-size: 0.9rem;
       outline: none;
-      width: 100%;
     }
 
+    /* Оптимизированный "сочный" блок времени */
     .time-input {
-      width: 110px;
+      width: 115px;
       flex-shrink: 0;
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.2);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.25);
       color: var(--accent);
-      padding: 6px;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      padding: 8px 4px;
+      border-radius: 8px;
+      font-size: 0.78rem;
       font-weight: 700;
       text-align: center;
-      font-family: monospace;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace; /* Строгий моноширинный шрифт */
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      letter-spacing: -0.2px;
+    }
+    .time-input:hover {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
-    .btn-delete { background: none; border: none; color: #52525b; cursor: pointer; font-size: 1.2rem; transition: color 0.2s; }
+    .btn-delete { background: none; border: none; color: #52525b; cursor: pointer; font-size: 1.2rem; }
     .btn-delete:hover { color: var(--danger); }
 
     .btn-add-row {
       width: 100%; background: transparent; color: #71717a;
       border: 1px dashed var(--border); padding: 12px;
       border-radius: 10px; margin-top: 10px; cursor: pointer;
-      font-weight: 600; transition: all 0.2s;
+      font-weight: 600;
     }
-    .btn-add-row:hover { border-color: var(--primary); color: var(--primary); background: rgba(139, 92, 246, 0.05); }
 
     .btn-save {
       background-color: var(--success); color: white;
       border: none; padding: 12px 24px; border-radius: 10px;
       font-weight: 600; cursor: pointer; display: none; margin-left: auto;
-      transition: all 0.2s ease;
     }
-    .btn-save:hover { background-color: #059669; transform: translateY(-1px); }
 
     .template-item {
       background: var(--input-bg); border: 1px solid var(--border);
       padding: 12px; margin-bottom: 8px; border-radius: 8px;
-      cursor: grab; font-size: 0.85rem; transition: all 0.2s;
-      font-weight: 500;
+      cursor: grab; font-size: 0.85rem; transition: 0.2s;
     }
     .template-item.block { border-color: var(--primary); color: var(--primary); background: rgba(139, 92, 246, 0.05); }
-    .template-item:hover { border-color: var(--primary-hover); transform: translateX(2px); }
+    .template-item:hover { border-color: var(--primary); transform: translateX(4px); }
 
-    h3 { margin-bottom: 15px; font-size: 0.85rem; color: #71717a; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
+    h3 { margin-bottom: 15px; font-size: 0.8rem; color: #71717a; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
@@ -235,9 +228,8 @@
     </div>
 
     <div class="schedule-area" id="app">
-      <div style="text-align: center; grid-column: 1/-1; padding: 100px 20px; color: #52525b;">
-        <h2>Оберіть файл для початку роботи</h2>
-        <p style="font-size: 0.9rem; margin-top: 10px;">Або перетягніть сюди JSON файл</p>
+      <div style="text-align: center; grid-column: 1/-1; padding: 100px 20px; opacity: 0.3;">
+        <h2>Оберіть файл для початку</h2>
       </div>
     </div>
   </div>
@@ -250,18 +242,9 @@ let rawData = null, dragItem = null, originalFileName = "schedule.json", fp = nu
 let config = { standardTimes: [], vnTimes: [], blocks: [], subjects: [] };
 
 async function loadTemplates() {
-  try {
-    const response = await fetch('templates.json');
-    if (!response.ok) throw new Error('Network response was not ok');
-    config = await response.json();
-    initSidebar();
-  } catch (error) {
-    console.error("Помилка завантаження templates.json:", error);
-    document.getElementById("templates-list").innerHTML = "<p style='color: var(--danger); font-size: 0.8rem;'>Помилка завантаження templates.json. Відкрийте файл через локальний сервер (Live Server).</p>";
-  }
-}
-
-function initSidebar() {
+  const response = await fetch('templates.json');
+  config = await response.json();
+  
   const blocksList = document.getElementById("blocks-list");
   config.blocks.forEach(b => {
     const d = document.createElement("div");
@@ -286,14 +269,9 @@ function initSidebar() {
 function init() {
   loadTemplates();
 
-  // Настройка формата даты dd.mm.yy
   fp = flatpickr("#weekDateInput", {
-    mode: "range", 
-    dateFormat: "d.m.y", 
-    locale: "uk",
-    onChange: (selectedDates, dateStr) => { 
-      if(rawData) rawData.date = dateStr; 
-    }
+    mode: "range", dateFormat: "d.m.Y", locale: "uk",
+    onClose: (s, str) => { if(rawData) rawData.date = str; }
   });
 }
 
@@ -304,27 +282,17 @@ document.getElementById("fileInput").addEventListener("change", e => {
   const reader = new FileReader();
   reader.onload = () => {
     let data = JSON.parse(reader.result);
-    // Очищаем время для динамики
     for(let day in data.schedule) {
       data.schedule[day] = data.schedule[day].filter((_, i) => i % 2 === 0);
     }
     rawData = data;
-    
     document.getElementById("dateEditorContainer").style.display = "flex";
     document.getElementById("saveBtn").style.display = "block";
-    
-    // Автоматически подтягиваем дату из JSON, если она там есть
-    if (rawData.date) {
-        fp.setDate(rawData.date);
-    }
+    if (rawData.date) fp.setDate(rawData.date);
     render();
   };
   reader.readAsText(file);
 });
-
-function startDrag(e, type, payload, day = null, index = null) {
-  dragItem = { type, payload, day, index };
-}
 
 function handleDrop(e, targetDay) {
   e.preventDefault();
@@ -366,7 +334,7 @@ function render() {
       row.className = "lesson";
       row.draggable = true;
       row.dataset.index = i;
-      row.ondragstart = () => startDrag(null, 'lesson', null, day, i);
+      row.ondragstart = () => dragItem = { type: 'lesson', payload: null, day, index: i };
 
       const isVN = text.includes("Виробниче навчання");
       const timeValue = isVN ? (config.vnTimes[i] || "(??:??)") : (config.standardTimes[i] || "(??:??)");
@@ -381,7 +349,7 @@ function render() {
 
     const addBtn = document.createElement("button");
     addBtn.className = "btn-add-row";
-    addBtn.innerText = "+ Додати предмет";
+    addBtn.innerText = "➕ Додати предмет";
     addBtn.onclick = () => { rawData.schedule[day].push("Новий предмет"); render(); };
     dayDiv.appendChild(addBtn);
     app.appendChild(dayDiv);
@@ -396,9 +364,6 @@ function updateDay(oldN, newN) {
 
 function exportJSON() {
   let exportData = JSON.parse(JSON.stringify(rawData));
-  // Обновляем дату перед сохранением, берем актуальное значение из инпута Flatpickr
-  exportData.date = document.getElementById("weekDateInput").value;
-  
   for(let day in exportData.schedule) {
     let formatted = [];
     exportData.schedule[day].forEach((subj, i) => {
