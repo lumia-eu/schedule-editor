@@ -322,11 +322,11 @@ const drag = {
   sourceIndex: null,
   type: null,       // 'lesson' | 'subject' | 'block'
   payload: null,
-  el: null,         // DOM element being dragged
+  el: null,
 };
 
 /* ─────────────────────────────────────────────
-   TEMPLATES / INIT
+   TEMPLATES / INIT (без змін)
 ───────────────────────────────────────────── */
 async function loadTemplates() {
   try {
@@ -344,8 +344,10 @@ function initSidebar() {
     d.innerText = b.title;
     d.draggable = true;
     d.addEventListener('dragstart', () => {
-      drag.type = 'block'; drag.payload = b;
-      drag.sourceDay = null; drag.sourceIndex = null;
+      drag.type = 'block'; 
+      drag.payload = b;
+      drag.sourceDay = null; 
+      drag.sourceIndex = null;
     });
     blocksList.appendChild(d);
   });
@@ -357,8 +359,10 @@ function initSidebar() {
     d.innerText = s;
     d.draggable = true;
     d.addEventListener('dragstart', () => {
-      drag.type = 'subject'; drag.payload = s;
-      drag.sourceDay = null; drag.sourceIndex = null;
+      drag.type = 'subject'; 
+      drag.payload = s;
+      drag.sourceDay = null; 
+      drag.sourceIndex = null;
     });
     subjList.appendChild(d);
   });
@@ -372,7 +376,7 @@ function init() {
 }
 
 /* ─────────────────────────────────────────────
-   FILE LOAD
+   FILE LOAD (без змін)
 ───────────────────────────────────────────── */
 document.getElementById("fileInput").addEventListener("change", e => {
   const file = e.target.files[0];
@@ -394,7 +398,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
 });
 
 /* ─────────────────────────────────────────────
-   RENDER
+   RENDER + LESSON BUILD (без змін)
 ───────────────────────────────────────────── */
 function getTime(text, index) {
   const isVN = text.includes("Виробниче навчання");
@@ -411,7 +415,6 @@ function render() {
     dayDiv.className = "day";
     dayDiv.dataset.day = day;
 
-    // Day header
     const header = document.createElement("div");
     header.className = "day-header";
     const titleInput = document.createElement("input");
@@ -421,7 +424,6 @@ function render() {
     header.appendChild(titleInput);
     dayDiv.appendChild(header);
 
-    // Lessons list
     const list = document.createElement("div");
     list.className = "lessons-list";
     list.dataset.day = day;
@@ -431,14 +433,12 @@ function render() {
       list.appendChild(row);
     });
 
-    // Drop zone events on list
     list.addEventListener('dragover', onListDragOver);
     list.addEventListener('dragleave', onListDragLeave);
     list.addEventListener('drop', onListDrop);
 
     dayDiv.appendChild(list);
 
-    // Add button
     const addBtn = document.createElement("button");
     addBtn.className = "btn-add-row";
     addBtn.innerText = "➕ Додати предмет";
@@ -459,7 +459,6 @@ function buildLessonEl(day, index, text) {
   row.dataset.day = day;
   row.dataset.index = index;
 
-  // Drag handle icon
   const handle = document.createElement("span");
   handle.className = "drag-handle";
   handle.innerHTML = `<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
@@ -469,31 +468,24 @@ function buildLessonEl(day, index, text) {
   </svg>`;
   row.appendChild(handle);
 
-  // Subject input
   const subjectInput = document.createElement("input");
   subjectInput.className = "subject-input";
   subjectInput.value = text;
   subjectInput.addEventListener('input', () => {
-    // Оновлюємо дані
     rawData.schedule[day][index] = subjectInput.value;
-
-    // Оновлюємо тільки тайм-блок цього рядка (VN / standard залежить тільки від предмета в цьому слоті)
     const newTime = getTime(subjectInput.value, index);
     const timeEl = row.querySelector('.time-input');
     if (timeEl) timeEl.value = newTime;
   });
   row.appendChild(subjectInput);
 
-  // Time badge — тепер завжди однакового розміру
   const timeVal = getTime(text, index);
   const timeInput = document.createElement("input");
   timeInput.className = "time-input";
   timeInput.value = timeVal;
   timeInput.readOnly = true;
-  timeInput.title = timeVal;
   row.appendChild(timeInput);
 
-  // Delete button
   const delBtn = document.createElement("button");
   delBtn.className = "btn-delete";
   delBtn.innerHTML = "×";
@@ -503,41 +495,36 @@ function buildLessonEl(day, index, text) {
   });
   row.appendChild(delBtn);
 
-  // Drag events
   row.addEventListener('dragstart', e => onLessonDragStart(e, row, day, index));
-  row.addEventListener('dragend',   onLessonDragEnd);
+  row.addEventListener('dragend', onLessonDragEnd);
 
   return row;
 }
 
 /* ─────────────────────────────────────────────
-   DRAG & DROP — LESSONS
+   DRAG & DROP — ВИПРАВЛЕНА ЛОГІКА
 ───────────────────────────────────────────── */
 function onLessonDragStart(e, el, day, index) {
-  drag.active     = true;
-  drag.type       = 'lesson';
-  drag.sourceDay  = day;
+  drag.active = true;
+  drag.type = 'lesson';
+  drag.sourceDay = day;
   drag.sourceIndex = index;
-  drag.el         = el;
+  drag.el = el;
 
-  // Slight delay so the ghost snapshot is taken before class is applied
   requestAnimationFrame(() => el.classList.add('dragging'));
 
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', ''); // required for Firefox
+  e.dataTransfer.setData('text/plain', '');
 }
 
 function onLessonDragEnd() {
   drag.active = false;
-  drag.el && drag.el.classList.remove('dragging');
+  if (drag.el) drag.el.classList.remove('dragging');
   drag.el = null;
   clearAllIndicators();
   clearDayHighlights();
 }
 
-/* ─────────────────────────────────────────────
-   DRAG & DROP — LIST (DROP ZONE)
-───────────────────────────────────────────── */
 function onListDragOver(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
@@ -547,9 +534,8 @@ function onListDragOver(e) {
   clearDayHighlights();
   dayEl.classList.add('drag-over-day');
 
-  // Calculate insert position
-  const { targetIndex, position } = getDropPosition(list, e.clientY);
-  renderDropIndicator(list, targetIndex, position);
+  const { targetIndex } = getDropPosition(list, e.clientY);
+  renderDropIndicator(list, targetIndex);
 }
 
 function onListDragLeave(e) {
@@ -564,7 +550,7 @@ function onListDrop(e) {
   clearAllIndicators();
   clearDayHighlights();
 
-  if (!drag.active && drag.type === null) return;
+  if (!drag.active) return;
 
   const list = e.currentTarget;
   const targetDay = list.dataset.day;
@@ -574,60 +560,33 @@ function onListDrop(e) {
 }
 
 /* ─────────────────────────────────────────────
-   DROP LOGIC
-───────────────────────────────────────────── */
-function performDrop(targetDay, targetIndex) {
-  if (!rawData) return;
-
-  let itemsToInsert = [];
-
-  if (drag.type === 'subject') {
-    itemsToInsert = [drag.payload];
-  } else if (drag.type === 'block') {
-    itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
-  } else if (drag.type === 'lesson') {
-    const srcDay   = drag.sourceDay;
-    const srcIndex = drag.sourceIndex;
-
-    // Remove from source
-    const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
-    itemsToInsert = [removed];
-  }
-
-  if (itemsToInsert.length === 0) return;
-
-  // Insert at target position
-  const arr = rawData.schedule[targetDay];
-  const insertAt = Math.min(targetIndex, arr.length);
-  arr.splice(insertAt, 0, ...itemsToInsert);
-
-  render();
-}
-
-/* ─────────────────────────────────────────────
-   DROP POSITION CALCULATION
+   НОВА, БІЛЬШ ТОЧНА ФУНКЦІЯ getDropPosition
 ───────────────────────────────────────────── */
 function getDropPosition(list, clientY) {
   const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
 
-  if (lessonEls.length === 0) return { targetIndex: 0, position: 'before' };
+  if (lessonEls.length === 0) {
+    return { targetIndex: 0 };
+  }
 
+  // Перевіряємо кожен урок
   for (let i = 0; i < lessonEls.length; i++) {
     const rect = lessonEls[i].getBoundingClientRect();
-    const mid  = rect.top + rect.height / 2;
-    if (clientY < mid) {
-      return { targetIndex: parseInt(lessonEls[i].dataset.index), position: 'before' };
+    
+    // Верхня половина → вставити ПЕРЕД цим елементом
+    if (clientY < rect.top + rect.height * 0.5) {
+      return { targetIndex: parseInt(lessonEls[i].dataset.index) };
     }
   }
-  // After last
-  const lastIndex = parseInt(lessonEls[lessonEls.length - 1].dataset.index);
-  return { targetIndex: lastIndex + 1, position: 'after' };
+
+  // Якщо нижче всіх — вставити в кінець
+  return { targetIndex: parseInt(lessonEls[lessonEls.length - 1].dataset.index) + 1 };
 }
 
 /* ─────────────────────────────────────────────
-   DROP INDICATOR RENDERING
+   DROP INDICATOR
 ───────────────────────────────────────────── */
-function renderDropIndicator(list, targetIndex, position) {
+function renderDropIndicator(list, targetIndex) {
   clearAllIndicators();
 
   const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
@@ -642,16 +601,16 @@ function renderDropIndicator(list, targetIndex, position) {
   }
 
   const targetEl = lessonEls.find(el => parseInt(el.dataset.index) === targetIndex);
+
   if (targetEl) {
-    list.insertBefore(indicator, targetEl);
+    list.insertBefore(indicator, targetEl);        // вставка перед
   } else {
     indicator.className = "drop-indicator-end";
-    list.appendChild(indicator);
+    list.appendChild(indicator);                   // в кінець
   }
 }
 
 function clearAllIndicators() {
-  document.querySelectorAll('[data-indicator]').forEach(el => el.remove());
   document.querySelectorAll('.drop-indicator, .drop-indicator-end').forEach(el => el.remove());
 }
 
@@ -660,7 +619,45 @@ function clearDayHighlights() {
 }
 
 /* ─────────────────────────────────────────────
-   DAY RENAME
+   PERFORM DROP
+───────────────────────────────────────────── */
+function performDrop(targetDay, targetIndex) {
+  if (!rawData) return;
+
+  let itemsToInsert = [];
+
+  if (drag.type === 'subject') {
+    itemsToInsert = [drag.payload];
+  } 
+  else if (drag.type === 'block') {
+    itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
+  } 
+  else if (drag.type === 'lesson') {
+    const srcDay = drag.sourceDay;
+    const srcIndex = drag.sourceIndex;
+
+    if (srcDay === targetDay && srcIndex === targetIndex) return; // нічого не робимо
+
+    const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
+    itemsToInsert = [removed];
+
+    // Якщо переміщення всередині одного дня і цільовий індекс був після джерела — коригуємо
+    if (srcDay === targetDay && targetIndex > srcIndex) {
+      targetIndex--;
+    }
+  }
+
+  if (itemsToInsert.length === 0) return;
+
+  const arr = rawData.schedule[targetDay];
+  const insertAt = Math.max(0, Math.min(targetIndex, arr.length));
+  arr.splice(insertAt, 0, ...itemsToInsert);
+
+  render();
+}
+
+/* ─────────────────────────────────────────────
+   DAY RENAME + EXPORT (без змін)
 ───────────────────────────────────────────── */
 function updateDay(oldN, newN) {
   if (oldN === newN) return;
@@ -671,9 +668,6 @@ function updateDay(oldN, newN) {
   render();
 }
 
-/* ─────────────────────────────────────────────
-   EXPORT
-───────────────────────────────────────────── */
 function exportJSON() {
   let exportData = JSON.parse(JSON.stringify(rawData));
   
