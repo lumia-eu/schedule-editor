@@ -34,7 +34,7 @@
       min-height: 100vh;
     }
 
-    .toolbar { /* без змін */ 
+    .toolbar {
       display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; align-items: center;
       background: var(--card-bg); padding: 15px 20px; border-radius: 14px;
       border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
@@ -54,7 +54,6 @@
       background: rgba(139,92,246,0.1); padding: 10px 18px;
       border-radius: 10px; border: 1px solid var(--primary);
     }
-
     .date-input-main { border: none; background: transparent; font-size: 14px; font-weight: 600; color: var(--text); outline: none; width: 220px; }
 
     .container { display: grid; grid-template-columns: 320px 1fr; gap: 25px; flex-grow: 1; }
@@ -81,7 +80,6 @@
 
     .lessons-list { min-height: 20px; position: relative; }
 
-    /* Основні анімації уроків */
     .lesson {
       display: flex; gap: 10px; margin-bottom: 10px;
       background: var(--input-bg); padding: 10px; border-radius: 10px;
@@ -89,15 +87,13 @@
       transition: 
         transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-        box-shadow 0.2s,
-        margin-bottom 0.35s cubic-bezier(0.4, 0.0, 0.2, 1),
-        height 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+        margin-bottom 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       position: relative;
     }
     .lesson:hover { border-color: var(--border); }
 
-    /* Коли перетягуємо — урок майже зникає з плавністю */
     .lesson.dragging {
       opacity: 0.25;
       transform: scale(0.92);
@@ -109,11 +105,10 @@
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Плавна поява нового/переміщеного уроку */
     .lesson.inserting {
       opacity: 0;
-      transform: scale(0.85) translateY(10px);
-      animation: lessonInsert 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform: scale(0.85) translateY(12px);
+      animation: lessonInsert 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes lessonInsert {
@@ -162,7 +157,10 @@
     }
     .btn-add-row:hover { border-color: var(--primary); color: var(--primary); }
 
-    .btn-save { background-color: var(--success); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; display: none; margin-left: auto; }
+    .btn-save {
+      background-color: var(--success); color: white; border: none; padding: 12px 24px;
+      border-radius: 10px; font-weight: 600; cursor: pointer; display: none; margin-left: auto;
+    }
 
     .template-item {
       background: var(--input-bg); border: 1px solid var(--border);
@@ -177,7 +175,6 @@
 </head>
 <body>
 
-  <!-- Toolbar та HTML-структура без змін -->
   <div class="toolbar">
     <div class="file-input-container">
       <input type="file" id="fileInput" accept=".json">
@@ -212,9 +209,7 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/uk.js"></script>
 
 <script>
-/* ─────────────────────────────────────────────
-   STATE (без змін)
-───────────────────────────────────────────── */
+/* STATE */
 let rawData = null, originalFileName = "schedule.json", fp = null;
 let config = { standardTimes: [], vnTimes: [], blocks: [], subjects: [] };
 
@@ -222,14 +217,12 @@ const drag = {
   active: false,
   sourceDay: null,
   sourceIndex: null,
-  type: null,
+  type: null,        // 'lesson' | 'subject' | 'block'
   payload: null,
   el: null,
 };
 
-/* ─────────────────────────────────────────────
-   INIT (без змін)
-───────────────────────────────────────────── */
+/* INIT */
 async function loadTemplates() {
   try {
     const response = await fetch('templates.json');
@@ -245,7 +238,12 @@ function initSidebar() {
     d.className = "template-item block";
     d.innerText = b.title;
     d.draggable = true;
-    d.addEventListener('dragstart', () => { drag.type = 'block'; drag.payload = b; });
+    d.addEventListener('dragstart', () => {
+      drag.type = 'block';
+      drag.payload = b;
+      drag.sourceDay = null;
+      drag.sourceIndex = null;
+    });
     blocksList.appendChild(d);
   });
 
@@ -255,7 +253,12 @@ function initSidebar() {
     d.className = "template-item";
     d.innerText = s;
     d.draggable = true;
-    d.addEventListener('dragstart', () => { drag.type = 'subject'; drag.payload = s; });
+    d.addEventListener('dragstart', () => {
+      drag.type = 'subject';
+      drag.payload = s;
+      drag.sourceDay = null;
+      drag.sourceIndex = null;
+    });
     subjList.appendChild(d);
   });
 }
@@ -265,7 +268,7 @@ function init() {
   fp = flatpickr("#weekDateInput", { mode: "range", dateFormat: "d.m.Y", locale: "uk" });
 }
 
-/* FILE LOAD, RENDER, buildLessonEl — майже без змін, тільки додаємо клас inserting при створенні */
+/* FILE LOAD */
 document.getElementById("fileInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -314,8 +317,7 @@ function render() {
     list.dataset.day = day;
 
     rawData.schedule[day].forEach((text, i) => {
-      const row = buildLessonEl(day, i, text);
-      list.appendChild(row);
+      list.appendChild(buildLessonEl(day, i, text));
     });
 
     list.addEventListener('dragover', onListDragOver);
@@ -344,7 +346,6 @@ function buildLessonEl(day, index, text) {
   row.dataset.day = day;
   row.dataset.index = index;
 
-  // Drag handle (без змін)
   const handle = document.createElement("span");
   handle.className = "drag-handle";
   handle.innerHTML = `<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
@@ -386,9 +387,7 @@ function buildLessonEl(day, index, text) {
   return row;
 }
 
-/* ─────────────────────────────────────────────
-   DRAG & DROP з покращеними анімаціями
-───────────────────────────────────────────── */
+/* DRAG & DROP */
 function onLessonDragStart(e, el, day, index) {
   drag.active = true;
   drag.type = 'lesson';
@@ -434,7 +433,7 @@ function onListDrop(e) {
   e.preventDefault();
   clearAllIndicators();
   clearDayHighlights();
-  if (!drag.active) return;
+  if (!drag.active && drag.type === null) return;
 
   const list = e.currentTarget;
   const targetDay = list.dataset.day;
@@ -463,17 +462,11 @@ function renderDropIndicator(list, targetIndex) {
   indicator.className = "drop-indicator";
   indicator.dataset.indicator = "true";
 
-  if (lessonEls.length === 0) {
+  if (lessonEls.length === 0 || targetIndex >= lessonEls.length) {
     indicator.className = "drop-indicator-end";
     list.appendChild(indicator);
-    return;
-  }
-
-  if (targetIndex < lessonEls.length) {
-    list.insertBefore(indicator, lessonEls[targetIndex]);
   } else {
-    indicator.className = "drop-indicator-end";
-    list.appendChild(indicator);
+    list.insertBefore(indicator, lessonEls[targetIndex]);
   }
 }
 
@@ -485,6 +478,7 @@ function clearDayHighlights() {
   document.querySelectorAll('.day.drag-over-day').forEach(el => el.classList.remove('drag-over-day'));
 }
 
+/* Головна функція drop — тепер підтримує ВСЕ */
 function performDrop(targetDay, targetIndex) {
   if (!rawData) return;
 
@@ -492,9 +486,11 @@ function performDrop(targetDay, targetIndex) {
 
   if (drag.type === 'subject') {
     itemsToInsert = [drag.payload];
-  } else if (drag.type === 'block') {
+  } 
+  else if (drag.type === 'block') {
     itemsToInsert = Array(drag.payload.count).fill(drag.payload.fill);
-  } else if (drag.type === 'lesson') {
+  } 
+  else if (drag.type === 'lesson') {
     const srcDay = drag.sourceDay;
     const srcIndex = drag.sourceIndex;
     const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
@@ -507,24 +503,21 @@ function performDrop(targetDay, targetIndex) {
   const insertAt = Math.max(0, Math.min(targetIndex, arr.length));
   arr.splice(insertAt, 0, ...itemsToInsert);
 
-  // Після render додаємо анімацію появи
   render();
 
-  // Знаходимо щойно додані елементи і запускаємо анімацію
+  // Плавна анімація появи нових елементів
   setTimeout(() => {
     const list = document.querySelector(`.lessons-list[data-day="${targetDay}"]`);
     if (!list) return;
-    const newLessons = list.querySelectorAll('.lesson');
-    newLessons.forEach((lesson, idx) => {
-      if (idx >= insertAt && idx < insertAt + itemsToInsert.length) {
-        lesson.classList.add('inserting');
-        setTimeout(() => lesson.classList.remove('inserting'), 400);
-      }
-    });
-  }, 10);
+    const lessons = [...list.querySelectorAll('.lesson')];
+    for (let i = insertAt; i < insertAt + itemsToInsert.length && i < lessons.length; i++) {
+      lessons[i].classList.add('inserting');
+      setTimeout(() => lessons[i].classList.remove('inserting'), 450);
+    }
+  }, 20);
 }
 
-/* DAY RENAME + EXPORT (без змін) */
+/* Інші функції */
 function updateDay(oldN, newN) {
   if (oldN === newN) return;
   const entries = Object.entries(rawData.schedule);
