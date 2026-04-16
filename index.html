@@ -118,7 +118,6 @@
       transition: border-color 0.2s;
     }
 
-    /* Day highlight when dragging over it */
     .day.drag-over-day {
       border-color: var(--primary);
       box-shadow: 0 0 0 1px var(--primary), 0 4px 24px rgba(139,92,246,0.15);
@@ -136,7 +135,6 @@
       font-weight: 700; outline: none; width: 100%;
     }
 
-    /* Lessons list wrapper — drop zone */
     .lessons-list {
       min-height: 20px;
       position: relative;
@@ -152,21 +150,26 @@
       align-items: center;
       cursor: grab;
       border: 1px solid transparent;
-      transition: border-color 0.15s, opacity 0.15s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s;
+      transition: border-color 0.15s, opacity 0.15s, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                  box-shadow 0.15s, height 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       position: relative;
     }
     .lesson:active { cursor: grabbing; }
     .lesson:hover { border-color: var(--border); }
 
-    /* Dragging source — dim it */
+    /* Dragging — теперь урок полностью «выпадает» из потока (убираем место), чтобы другие уроки плавно сдвигались */
     .lesson.dragging {
-      opacity: 0.35;
+      opacity: 0.3;
       border-color: var(--primary) !important;
-      transform: scale(0.97);
+      transform: scale(0.95);
+      height: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      overflow: hidden;
     }
 
-    /* Drop indicator line — appears above/below a lesson */
     .drop-indicator {
       height: 3px;
       border-radius: 2px;
@@ -181,7 +184,6 @@
       to   { opacity: 1; }
     }
 
-    /* Drop-at-end indicator */
     .drop-indicator-end {
       height: 3px;
       border-radius: 2px;
@@ -192,7 +194,6 @@
       animation: dropPulse 0.6s ease infinite alternate;
     }
 
-    /* Drag handle */
     .drag-handle {
       color: #3f3f46;
       cursor: grab;
@@ -216,13 +217,9 @@
       min-width: 0;
     }
 
-    /* ── TIME BLOCKS ──────────────────────────────────────────────
-       Усі тайм-блоки тепер СЕМЕРИЧНІ (однакового розміру) і не відрізняються один від одного.
-       Ширина 150px — достатньо, щоб будь-яке значення часу (навіть "10:20 - 11:05")
-       чітко вміщувалося без обрізання, без динамічного ресайзу і без "плаваючих" блоків. */
     .time-input {
       flex-shrink: 0;
-      width: 150px;                    /* ФІКСОВАНА ширина — всі блоки однакові */
+      width: 150px;
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
       border: 1px solid rgba(245, 158, 11, 0.25);
       color: var(--accent);
@@ -320,13 +317,13 @@ const drag = {
   active: false,
   sourceDay: null,
   sourceIndex: null,
-  type: null,       // 'lesson' | 'subject' | 'block'
+  type: null,
   payload: null,
   el: null,
 };
 
 /* ─────────────────────────────────────────────
-   TEMPLATES / INIT (без змін)
+   TEMPLATES / INIT
 ───────────────────────────────────────────── */
 async function loadTemplates() {
   try {
@@ -376,7 +373,7 @@ function init() {
 }
 
 /* ─────────────────────────────────────────────
-   FILE LOAD (без змін)
+   FILE LOAD
 ───────────────────────────────────────────── */
 document.getElementById("fileInput").addEventListener("change", e => {
   const file = e.target.files[0];
@@ -398,7 +395,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
 });
 
 /* ─────────────────────────────────────────────
-   RENDER + LESSON BUILD (без змін)
+   RENDER
 ───────────────────────────────────────────── */
 function getTime(text, index) {
   const isVN = text.includes("Виробниче навчання");
@@ -502,7 +499,7 @@ function buildLessonEl(day, index, text) {
 }
 
 /* ─────────────────────────────────────────────
-   DRAG & DROP — ВИПРАВЛЕНА ЛОГІКА
+   DRAG & DROP — ВИПРАВЛЕНА ЛОГІКА ДЛЯ ПЕРЕМІЩЕННЯ ВСЕРЕДИНІ ДНЯ
 ───────────────────────────────────────────── */
 function onLessonDragStart(e, el, day, index) {
   drag.active = true;
@@ -560,27 +557,21 @@ function onListDrop(e) {
 }
 
 /* ─────────────────────────────────────────────
-   НОВА, БІЛЬШ ТОЧНА ФУНКЦІЯ getDropPosition
+   НОВА getDropPosition — повертає ВІЗУАЛЬНУ позицію (0...length)
+   Це ключове виправлення — більше ніяких стрибків!
 ───────────────────────────────────────────── */
 function getDropPosition(list, clientY) {
   const lessonEls = [...list.querySelectorAll('.lesson:not(.dragging)')];
 
-  if (lessonEls.length === 0) {
-    return { targetIndex: 0 };
-  }
+  if (lessonEls.length === 0) return { targetIndex: 0 };
 
-  // Перевіряємо кожен урок
   for (let i = 0; i < lessonEls.length; i++) {
     const rect = lessonEls[i].getBoundingClientRect();
-    
-    // Верхня половина → вставити ПЕРЕД цим елементом
     if (clientY < rect.top + rect.height * 0.5) {
-      return { targetIndex: parseInt(lessonEls[i].dataset.index) };
+      return { targetIndex: i };           // вставити на цю візуальну позицію
     }
   }
-
-  // Якщо нижче всіх — вставити в кінець
-  return { targetIndex: parseInt(lessonEls[lessonEls.length - 1].dataset.index) + 1 };
+  return { targetIndex: lessonEls.length }; // в кінець
 }
 
 /* ─────────────────────────────────────────────
@@ -600,13 +591,11 @@ function renderDropIndicator(list, targetIndex) {
     return;
   }
 
-  const targetEl = lessonEls.find(el => parseInt(el.dataset.index) === targetIndex);
-
-  if (targetEl) {
-    list.insertBefore(indicator, targetEl);        // вставка перед
+  if (targetIndex < lessonEls.length) {
+    list.insertBefore(indicator, lessonEls[targetIndex]);
   } else {
     indicator.className = "drop-indicator-end";
-    list.appendChild(indicator);                   // в кінець
+    list.appendChild(indicator);
   }
 }
 
@@ -619,7 +608,7 @@ function clearDayHighlights() {
 }
 
 /* ─────────────────────────────────────────────
-   PERFORM DROP
+   PERFORM DROP — тепер дуже просто і стабільно
 ───────────────────────────────────────────── */
 function performDrop(targetDay, targetIndex) {
   if (!rawData) return;
@@ -636,15 +625,12 @@ function performDrop(targetDay, targetIndex) {
     const srcDay = drag.sourceDay;
     const srcIndex = drag.sourceIndex;
 
-    if (srcDay === targetDay && srcIndex === targetIndex) return; // нічого не робимо
-
+    // Витягуємо урок
     const [removed] = rawData.schedule[srcDay].splice(srcIndex, 1);
     itemsToInsert = [removed];
 
-    // Якщо переміщення всередині одного дня і цільовий індекс був після джерела — коригуємо
-    if (srcDay === targetDay && targetIndex > srcIndex) {
-      targetIndex--;
-    }
+    // Якщо той самий день — targetIndex вже є правильною візуальною позицією після видалення
+    // (завдяки новій getDropPosition)
   }
 
   if (itemsToInsert.length === 0) return;
@@ -657,7 +643,7 @@ function performDrop(targetDay, targetIndex) {
 }
 
 /* ─────────────────────────────────────────────
-   DAY RENAME + EXPORT (без змін)
+   DAY RENAME + EXPORT
 ───────────────────────────────────────────── */
 function updateDay(oldN, newN) {
   if (oldN === newN) return;
