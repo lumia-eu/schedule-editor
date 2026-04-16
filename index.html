@@ -152,14 +152,14 @@
       outline: none;
     }
 
-    /* Оптимизированный блок времени: шире и четче */
+    /* ФИНАЛЬНАЯ ПРАВКА ВРЕМЕНИ: еще шире и больше отступы */
     .time-input {
-      width: 125px;
+      width: 135px; 
       flex-shrink: 0;
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
       border: 1px solid rgba(245, 158, 11, 0.25);
       color: var(--accent);
-      padding: 8px 6px;
+      padding: 8px 10px;
       border-radius: 8px;
       font-size: 0.8rem;
       font-weight: 700;
@@ -167,6 +167,8 @@
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
       transition: all 0.2s ease;
+      letter-spacing: 0.2px;
+      overflow: visible;
     }
     .time-input:hover {
       background: rgba(245, 158, 11, 0.12);
@@ -290,6 +292,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
     rawData = data;
     document.getElementById("dateEditorContainer").style.display = "flex";
     document.getElementById("saveBtn").style.display = "block";
+    // Если в файле дата в формате dd.mm.yy - dd.mm.yy, она корректно подтянется в flatpickr
     if (rawData.date) fp.setDate(rawData.date.replace(/ - /g, ' to '));
     render();
   };
@@ -359,15 +362,17 @@ function updateDay(oldN, newN) {
 function exportJSON() {
   let exportData = JSON.parse(JSON.stringify(rawData));
   
-  // Конвертация даты для сохранения: 20.04.2026 to 24.04.2026 -> 20.04.26 - 24.04.26
+  // Конвертация даты для сохранения в файл (dd.mm.yy - dd.mm.yy)
   let dateVal = document.getElementById("weekDateInput").value;
   if(dateVal.includes(" to ")) {
     exportData.date = dateVal.split(" to ").map(d => {
        const parts = d.split('.');
        return `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
     }).join(" - ");
-  } else {
-    exportData.date = dateVal;
+  } else if (dateVal !== "") {
+    // Для одиночной даты
+    const parts = dateVal.split('.');
+    exportData.date = `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
   }
 
   for(let day in exportData.schedule) {
