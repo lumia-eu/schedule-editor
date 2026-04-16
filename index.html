@@ -78,7 +78,7 @@
     .date-input-main {
       border: none; background: transparent;
       font-size: 14px; font-weight: 600;
-      color: var(--text); outline: none; width: 190px;
+      color: var(--text); outline: none; width: 220px;
     }
 
     .container {
@@ -90,7 +90,7 @@
 
     @media (max-width: 1100px) {
       .container { grid-template-columns: 1fr; }
-      .sidebar { order: 2; }
+      .sidebar { order: 2; position: static; }
     }
 
     .sidebar {
@@ -152,22 +152,21 @@
       outline: none;
     }
 
-    /* Оптимизированный "сочный" блок времени */
+    /* Оптимизированный блок времени: шире и четче */
     .time-input {
-      width: 115px;
+      width: 125px;
       flex-shrink: 0;
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
       border: 1px solid rgba(245, 158, 11, 0.25);
       color: var(--accent);
-      padding: 8px 4px;
+      padding: 8px 6px;
       border-radius: 8px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 700;
       text-align: center;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace; /* Строгий моноширинный шрифт */
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
       box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
       transition: all 0.2s ease;
-      letter-spacing: -0.2px;
     }
     .time-input:hover {
       background: rgba(245, 158, 11, 0.12);
@@ -242,9 +241,14 @@ let rawData = null, dragItem = null, originalFileName = "schedule.json", fp = nu
 let config = { standardTimes: [], vnTimes: [], blocks: [], subjects: [] };
 
 async function loadTemplates() {
-  const response = await fetch('templates.json');
-  config = await response.json();
-  
+  try {
+    const response = await fetch('templates.json');
+    config = await response.json();
+    initSidebar();
+  } catch(e) { console.error("Templates loading error", e); }
+}
+
+function initSidebar() {
   const blocksList = document.getElementById("blocks-list");
   config.blocks.forEach(b => {
     const d = document.createElement("div");
@@ -268,10 +272,8 @@ async function loadTemplates() {
 
 function init() {
   loadTemplates();
-
   fp = flatpickr("#weekDateInput", {
-    mode: "range", dateFormat: "d.m.Y", locale: "uk",
-    onClose: (s, str) => { if(rawData) rawData.date = str; }
+    mode: "range", dateFormat: "d.m.Y", locale: "uk"
   });
 }
 
@@ -288,7 +290,7 @@ document.getElementById("fileInput").addEventListener("change", e => {
     rawData = data;
     document.getElementById("dateEditorContainer").style.display = "flex";
     document.getElementById("saveBtn").style.display = "block";
-    if (rawData.date) fp.setDate(rawData.date);
+    if (rawData.date) fp.setDate(rawData.date.replace(/ - /g, ' to '));
     render();
   };
   reader.readAsText(file);
@@ -299,20 +301,13 @@ function handleDrop(e, targetDay) {
   if (!dragItem || !rawData) return;
 
   let lessonsToAdd = [];
-  if (dragItem.type === 'subject') {
-    lessonsToAdd = [dragItem.payload];
-  } else if (dragItem.type === 'block') {
-    lessonsToAdd = Array(dragItem.payload.count).fill(dragItem.payload.fill);
-  } else if (dragItem.type === 'lesson') {
-    lessonsToAdd = rawData.schedule[dragItem.day].splice(dragItem.index, 1);
-  }
+  if (dragItem.type === 'subject') lessonsToAdd = [dragItem.payload];
+  else if (dragItem.type === 'block') lessonsToAdd = Array(dragItem.payload.count).fill(dragItem.payload.fill);
+  else if (dragItem.type === 'lesson') lessonsToAdd = rawData.schedule[dragItem.day].splice(dragItem.index, 1);
 
   const lessonNode = e.target.closest('.lesson');
-  if (lessonNode) {
-    rawData.schedule[targetDay].splice(parseInt(lessonNode.dataset.index), 0, ...lessonsToAdd);
-  } else {
-    rawData.schedule[targetDay].push(...lessonsToAdd);
-  }
+  if (lessonNode) rawData.schedule[targetDay].splice(parseInt(lessonNode.dataset.index), 0, ...lessonsToAdd);
+  else rawData.schedule[targetDay].push(...lessonsToAdd);
   render();
 }
 
@@ -333,8 +328,7 @@ function render() {
       const row = document.createElement("div");
       row.className = "lesson";
       row.draggable = true;
-      row.dataset.index = i;
-      row.ondragstart = () => dragItem = { type: 'lesson', payload: null, day, index: i };
+      row.ondragstart = () => dragItem = { type: 'lesson', day, index: i };
 
       const isVN = text.includes("Виробниче навчання");
       const timeValue = isVN ? (config.vnTimes[i] || "(??:??)") : (config.standardTimes[i] || "(??:??)");
@@ -364,6 +358,18 @@ function updateDay(oldN, newN) {
 
 function exportJSON() {
   let exportData = JSON.parse(JSON.stringify(rawData));
+  
+  // Конвертация даты для сохранения: 20.04.2026 to 24.04.2026 -> 20.04.26 - 24.04.26
+  let dateVal = document.getElementById("weekDateInput").value;
+  if(dateVal.includes(" to ")) {
+    exportData.date = dateVal.split(" to ").map(d => {
+       const parts = d.split('.');
+       return `${parts[0]}.${parts[1]}.${parts[2].slice(-2)}`;
+    }).join(" - ");
+  } else {
+    exportData.date = dateVal;
+  }
+
   for(let day in exportData.schedule) {
     let formatted = [];
     exportData.schedule[day].forEach((subj, i) => {
